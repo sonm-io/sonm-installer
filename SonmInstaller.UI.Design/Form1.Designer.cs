@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
-            this.lblDownloadProgress = new System.Windows.Forms.Label();
-            this.pbDownload = new System.Windows.Forms.ProgressBar();
             this.btnBack = new System.Windows.Forms.Button();
             this.btnNext = new System.Windows.Forms.Button();
             this.step1 = new SonmInstaller.WizardPages();
@@ -43,6 +41,7 @@
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.label2 = new System.Windows.Forms.Label();
             this.step2a1 = new System.Windows.Forms.TabPage();
+            this.lblErrorMessage = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
@@ -76,14 +75,13 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.step5progress = new System.Windows.Forms.TabPage();
-            this.label24 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.step6fin = new System.Windows.Forms.TabPage();
             this.linkLabel5 = new System.Windows.Forms.LinkLabel();
             this.label25 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.lblErrorMessage = new System.Windows.Forms.Label();
+            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
+            this.progressBar = new SonmInstaller.UI.ProgressBar();
             this.panel1.SuspendLayout();
             this.step1.SuspendLayout();
             this.step0.SuspendLayout();
@@ -99,8 +97,7 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.lblDownloadProgress);
-            this.panel1.Controls.Add(this.pbDownload);
+            this.panel1.Controls.Add(this.progressBarBottom);
             this.panel1.Controls.Add(this.btnBack);
             this.panel1.Controls.Add(this.btnNext);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -108,25 +105,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(776, 70);
             this.panel1.TabIndex = 4;
-            // 
-            // lblDownloadProgress
-            // 
-            this.lblDownloadProgress.AutoSize = true;
-            this.lblDownloadProgress.Location = new System.Drawing.Point(13, 15);
-            this.lblDownloadProgress.Name = "lblDownloadProgress";
-            this.lblDownloadProgress.Size = new System.Drawing.Size(46, 17);
-            this.lblDownloadProgress.TabIndex = 2;
-            this.lblDownloadProgress.Text = "label1";
-            // 
-            // pbDownload
-            // 
-            this.pbDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pbDownload.Location = new System.Drawing.Point(13, 46);
-            this.pbDownload.Name = "pbDownload";
-            this.pbDownload.Size = new System.Drawing.Size(455, 12);
-            this.pbDownload.TabIndex = 1;
             // 
             // btnBack
             // 
@@ -138,6 +116,7 @@
             this.btnBack.TabIndex = 0;
             this.btnBack.Text = "Back";
             this.btnBack.UseVisualStyleBackColor = true;
+            this.btnBack.Click += new System.EventHandler(this.btnBack_Click);
             // 
             // btnNext
             // 
@@ -149,7 +128,7 @@
             this.btnNext.TabIndex = 0;
             this.btnNext.Text = "Next";
             this.btnNext.UseVisualStyleBackColor = true;
-            this.btnNext.Click += new System.EventHandler(this.button1_Click);
+            this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             // 
             // step1
             // 
@@ -275,6 +254,17 @@
             this.step2a1.TabIndex = 2;
             this.step2a1.Text = "step2a1";
             // 
+            // lblErrorMessage
+            // 
+            this.lblErrorMessage.AutoSize = true;
+            this.lblErrorMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.lblErrorMessage.Location = new System.Drawing.Point(246, 124);
+            this.lblErrorMessage.Name = "lblErrorMessage";
+            this.lblErrorMessage.Size = new System.Drawing.Size(100, 17);
+            this.lblErrorMessage.TabIndex = 7;
+            this.lblErrorMessage.Text = "error message";
+            this.lblErrorMessage.Visible = false;
+            // 
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
@@ -299,18 +289,18 @@
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(12, 245);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(302, 17);
+            this.label15.Size = new System.Drawing.Size(293, 17);
             this.label15.TabIndex = 5;
-            this.label15.Text = "json файл с ключем будет сохранен в папку:";
+            this.label15.Text = "json file with key will be saved to this location:";
             // 
             // label14
             // 
             this.label14.AutoSize = true;
             this.label14.Location = new System.Drawing.Point(12, 60);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(334, 17);
+            this.label14.Size = new System.Drawing.Size(219, 17);
             this.label14.TabIndex = 5;
-            this.label14.Text = "Придумайте пароль от вашего приватного ключа";
+            this.label14.Text = "Set password for your private key";
             // 
             // label13
             // 
@@ -405,9 +395,9 @@
             this.label17.AutoSize = true;
             this.label17.Location = new System.Drawing.Point(15, 62);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(251, 17);
+            this.label17.Size = new System.Drawing.Size(195, 17);
             this.label17.TabIndex = 3;
-            this.label17.Text = "json-файл с ключем записан в файл:";
+            this.label17.Text = "json-file with key saved to file:";
             // 
             // label4
             // 
@@ -511,9 +501,9 @@
             this.label22.AutoSize = true;
             this.label22.Location = new System.Drawing.Point(15, 181);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(347, 17);
+            this.label22.Size = new System.Drawing.Size(231, 17);
             this.label22.TabIndex = 4;
-            this.label22.Text = "Сумма, по достижению которой выводить средства";
+            this.label22.Text = "The amount by which to draw funds";
             // 
             // label21
             // 
@@ -591,24 +581,14 @@
             // step5progress
             // 
             this.step5progress.BackColor = System.Drawing.SystemColors.Control;
-            this.step5progress.Controls.Add(this.label24);
+            this.step5progress.Controls.Add(this.progressBar);
             this.step5progress.Controls.Add(this.label8);
-            this.step5progress.Controls.Add(this.progressBar1);
             this.step5progress.Location = new System.Drawing.Point(4, 25);
             this.step5progress.Name = "step5progress";
             this.step5progress.Padding = new System.Windows.Forms.Padding(3);
             this.step5progress.Size = new System.Drawing.Size(768, 376);
             this.step5progress.TabIndex = 7;
             this.step5progress.Text = "step5progress";
-            // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(15, 157);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(46, 17);
-            this.label24.TabIndex = 2;
-            this.label24.Text = "label1";
             // 
             // label8
             // 
@@ -619,16 +599,6 @@
             this.label8.Size = new System.Drawing.Size(249, 31);
             this.label8.TabIndex = 2;
             this.label8.Text = "Step {0} of {1}: Wait";
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(18, 188);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(730, 12);
-            this.progressBar1.TabIndex = 1;
             // 
             // step6fin
             // 
@@ -674,16 +644,27 @@
             this.label9.TabIndex = 2;
             this.label9.Text = "Setup successfully finished";
             // 
-            // lblErrorMessage
+            // progressBarBottom
             // 
-            this.lblErrorMessage.AutoSize = true;
-            this.lblErrorMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.lblErrorMessage.Location = new System.Drawing.Point(246, 124);
-            this.lblErrorMessage.Name = "lblErrorMessage";
-            this.lblErrorMessage.Size = new System.Drawing.Size(100, 17);
-            this.lblErrorMessage.TabIndex = 7;
-            this.lblErrorMessage.Text = "error message";
-            this.lblErrorMessage.Visible = false;
+            this.progressBarBottom.LabelTpl = null;
+            this.progressBarBottom.Location = new System.Drawing.Point(4, 15);
+            this.progressBarBottom.Name = "progressBarBottom";
+            this.progressBarBottom.ProgressCurrent = 0;
+            this.progressBarBottom.ProgressTotal = 0;
+            this.progressBarBottom.Size = new System.Drawing.Size(479, 45);
+            this.progressBarBottom.TabIndex = 1;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.LabelTpl = null;
+            this.progressBar.Location = new System.Drawing.Point(15, 187);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.ProgressCurrent = 0;
+            this.progressBar.ProgressTotal = 0;
+            this.progressBar.Size = new System.Drawing.Size(736, 45);
+            this.progressBar.TabIndex = 3;
             // 
             // Form1
             // 
@@ -695,7 +676,6 @@
             this.Name = "Form1";
             this.Text = "Form1";
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.step1.ResumeLayout(false);
             this.step0.ResumeLayout(false);
             this.step0.PerformLayout();
@@ -721,8 +701,6 @@
 
         #endregion
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label lblDownloadProgress;
-        private System.Windows.Forms.ProgressBar pbDownload;
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnNext;
         private WizardPages step1;
@@ -771,11 +749,11 @@
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.LinkLabel linkLabel5;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.Label lblErrorMessage;
+        private UI.ProgressBar progressBarBottom;
+        private UI.ProgressBar progressBar;
     }
 }
 
