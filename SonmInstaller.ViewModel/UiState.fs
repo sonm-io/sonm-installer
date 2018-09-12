@@ -88,9 +88,3 @@ type UiStateChange =
     
 type UiStateChanges = UiStateChange list
 
-module X = 
-
-    let x = [
-        BackButton([Caption; Visible])
-        Screen
-    ]

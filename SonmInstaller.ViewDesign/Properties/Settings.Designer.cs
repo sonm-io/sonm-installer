@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SonmInstaller.UI.Properties {
+namespace SonmInstaller.ViewDesign.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

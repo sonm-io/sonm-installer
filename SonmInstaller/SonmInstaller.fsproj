@@ -6,13 +6,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>efdc57f9-dfdc-4d00-b597-76bc5dfb9f78</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>SonmInstaller.FormBase</RootNamespace>
-    <AssemblyName>SonmInstaller.UI</AssemblyName>
+    <AssemblyName>SonmInstaller</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>SonmInstaller.UI</Name>
+    <Name>SonmInstaller</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,8 +42,9 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="WizardFormBase.fs" />
+    <Compile Include="WizardForm.fs" />
     <Content Include="packages.config" />
+    <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
@@ -61,8 +62,8 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SonmInstaller.UI.Design\SonmInstaller.UI.Design.csproj">
-      <Name>SonmInstaller.UI.Design</Name>
+    <ProjectReference Include="..\SonmInstaller.ViewDesign\SonmInstaller.ViewDesign.csproj">
+      <Name>SonmInstaller.ViewDesign</Name>
       <Project>{c4ac0c2d-03fd-4205-ada4-5537299a869d}</Project>
       <Private>True</Private>
     </ProjectReference>

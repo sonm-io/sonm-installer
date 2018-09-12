@@ -5,9 +5,9 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{C4AC0C2D-03FD-4205-ADA4-5537299A869D}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>SonmInstaller.UI</RootNamespace>
-    <AssemblyName>SonmInstaller.UI</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SonmInstaller.ViewDesign</RootNamespace>
+    <AssemblyName>SonmInstaller.ViewDesign</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -30,6 +30,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=4.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />

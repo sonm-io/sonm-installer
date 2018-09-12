@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SonmInstaller.ViewModel", "SonmInstaller.ViewModel\SonmInstaller.ViewModel.fsproj", "{317079A7-F61D-4B47-9FDD-CCEBD97649A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SonmInstaller.UI.Design", "SonmInstaller.UI.Design\SonmInstaller.UI.Design.csproj", "{C4AC0C2D-03FD-4205-ADA4-5537299A869D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SonmInstaller.ViewDesign", "SonmInstaller.ViewDesign\SonmInstaller.ViewDesign.csproj", "{C4AC0C2D-03FD-4205-ADA4-5537299A869D}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SonmInstaller.UI", "SonmInstaller.UI\SonmInstaller.UI.fsproj", "{EFDC57F9-DFDC-4D00-B597-76BC5DFB9F78}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SonmInstaller", "SonmInstaller\SonmInstaller.fsproj", "{EFDC57F9-DFDC-4D00-B597-76BC5DFB9F78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
