@@ -7,6 +7,7 @@ using System.Windows.Forms;
 
 namespace SonmInstaller
 {
+    // https://stackoverflow.com/a/11246590/1189832
     public class WizardPages : TabControl
     {
         protected override void WndProc(ref Message m)
