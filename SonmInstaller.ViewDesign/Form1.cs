@@ -10,7 +10,7 @@ namespace SonmInstaller
             InitializeComponent();
 
             linkWelcome.Links.Add(new LinkLabel.Link(193, 13, "http://docs.sonm.com"));
-            linkLabel1.Links.Add(new LinkLabel.Link(45, 8, "http://sonm.com"));
+            linkLabel1.Links.Add(new LinkLabel.Link(45, 8, "https://sonm-io.github.io/gui/"));
             linkFaq.Links.Add(new LinkLabel.Link(199, 13, "http://docs.sonm.com"));
         }
 
