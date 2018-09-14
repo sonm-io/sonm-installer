@@ -47,9 +47,9 @@
             this.lblProgress.AutoSize = true;
             this.lblProgress.Location = new System.Drawing.Point(4, 7);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(125, 17);
+            this.lblProgress.Size = new System.Drawing.Size(169, 17);
             this.lblProgress.TabIndex = 1;
-            this.lblProgress.Text = "Progress {0} of {1}";
+            this.lblProgress.Text = "Progress {0} of {1} ({2}%)";
             // 
             // ProgressBar
             // 

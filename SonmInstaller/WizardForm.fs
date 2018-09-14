@@ -42,7 +42,9 @@ let updateView (form: WizardFormDesign) (prev: UiState) (next: UiState) force =
     form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
     updateStepNum form (next.CurrentStepNum()) totalSteps
     updateNewKey form next
-    form.progressBarBottom.Visible <- next.CurrentScreen () < Screen.S5Progress
+    form.progressBarBottom.Visible <- 
+        let cs = next.CurrentScreen ()
+        cs > Screen.S0Welcome && cs < Screen.S5Progress
 
 type WizardForm() as this =
     inherit WizardFormDesign()

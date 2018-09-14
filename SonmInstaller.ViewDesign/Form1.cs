@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace SonmInstaller
@@ -15,6 +8,15 @@ namespace SonmInstaller
         public WizardFormDesign()
         {
             InitializeComponent();
+
+            linkWelcome.Links.Add(new LinkLabel.Link(193, 13, "http://docs.sonm.com"));
+            linkLabel1.Links.Add(new LinkLabel.Link(45, 8, "http://sonm.com"));
+            linkFaq.Links.Add(new LinkLabel.Link(199, 13, "http://docs.sonm.com"));
+        }
+
+        private void LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(e.Link.LinkData as string);
         }
     }
 }

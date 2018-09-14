@@ -117,4 +117,67 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="linkWelcome.Text" xml:space="preserve">
+    <value>You will need USB flash drive with minimum capacity of 16 GB.
+
+We will download installation image while you perform settings.
+The total file size is ~ 1 GB. 
+
+For more information, visit docs.sonm.com</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        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
+</value>
+  </data>
+  <data name="linkFaq.Text" xml:space="preserve">
+    <value>Now you have USB flash drive with SONM installer.
+
+You may use it 
+as Live USB stick to try SONM platform as supplier,
+for permanent installation of SONM platform.
+
+For more information, visit docs.sonm.com</value>
+  </data>
 </root>
