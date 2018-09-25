@@ -373,7 +373,7 @@
             this.tbPasswordRepeat.Name = "tbPasswordRepeat";
             this.tbPasswordRepeat.PasswordChar = '*';
             this.tbPasswordRepeat.Size = new System.Drawing.Size(216, 22);
-            this.tbPasswordRepeat.TabIndex = 3;
+            this.tbPasswordRepeat.TabIndex = 2;
             // 
             // tbPassword
             // 
@@ -381,7 +381,7 @@
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.PasswordChar = '*';
             this.tbPassword.Size = new System.Drawing.Size(216, 22);
-            this.tbPassword.TabIndex = 3;
+            this.tbPassword.TabIndex = 1;
             // 
             // lblHeader2a1
             // 

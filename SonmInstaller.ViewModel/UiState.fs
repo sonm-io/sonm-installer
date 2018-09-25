@@ -17,46 +17,48 @@ module Button =
     let btnNext   = createBtn "Next"
     let btnClose  = createBtn "Close"
 
-[<AutoOpen>]
 module NewKeyPage = 
-    type NewKeyState = {
+    type State = {
         Password: string;
         PasswordRepeat: string;
         ErrorMessage: string option;
     }
     with
         member this.NextAllowed () = 
-            (this.Password <> "" || this.PasswordRepeat <> "") 
+            (this.Password <> "" || this.PasswordRepeat <> "")
             && Option.isNone this.ErrorMessage
 
-    type NewKeyAction =
+    type Action =
         | PasswordUpdate of string
         | PasswordRepeatUpdate of string
-        | ResetErrorMessage
+        | Validate
 
-    let private validate p1 p2 =
-        if p1 <> p2 then
-            Some "Passwords didn't match"
-        else
-            None
+    module private Private =
 
-    let update (state: NewKeyState) = function
+        let validateState (state: State) = 
+            let validate p1 p2 =
+                if p1 = "" then
+                    Some "Please choose a password"
+                elif p2 = "" then
+                    Some "Please confirm your password"
+                elif p1 <> p2 then
+                    Some "Passwords didn't match"
+                else
+                    None            
+            validate state.Password state.PasswordRepeat
+
+    let update (state: State) = function
         | PasswordUpdate p ->
-            let msg = validate p state.PasswordRepeat
-            { state with Password = p; ErrorMessage = msg }
+            { state with Password = p; ErrorMessage = None }
         | PasswordRepeatUpdate p -> 
-            let msg = validate state.Password p
-            { state with PasswordRepeat = p; ErrorMessage = msg }
-        | ResetErrorMessage -> { state with ErrorMessage = None }
+            { state with PasswordRepeat = p; ErrorMessage = None }
+        | Validate -> { state with ErrorMessage = Private.validateState state }
 
     let initial = { Password = ""; PasswordRepeat = ""; ErrorMessage = None }
 
 [<AutoOpen>]
 module Main = 
     
-    open Button
-    open NewKeyPage
-
     type Screen = 
         | S0Welcome = 0
         | S1DoYouHaveWallet = 1
@@ -84,7 +86,7 @@ module Main =
         HasWallet: bool
         BackButton: ButtonState
         NextButton: ButtonState
-        NewKeyState: NewKeyState
+        NewKeyState: NewKeyPage.State
     }
     with
         member this.IsAtBeginning () = this.StepsHistory = []
@@ -103,73 +105,88 @@ module Main =
         | Back
         | Next
         | HasWallet of bool
-        | NewKeyAction of NewKeyAction
+        | NewKeyAction of NewKeyPage.Action
         | ChangeInstallationStatus of InstallationStatus
     
-    let private getNextStep (state: UiState) =
-        let (screen, step) = state.CurrentStep
-        let newScreen = 
-            match screen with
-            | Screen.S0Welcome         -> Screen.S1DoYouHaveWallet
-            | Screen.S1DoYouHaveWallet -> 
-                match state.HasWallet with 
-                | false                -> Screen.S2a1KeyGen
-                | true                 -> Screen.S2b1SelectJson
-            | Screen.S2a1KeyGen        -> Screen.S2a2KeyGenSuccess
-            | Screen.S2a2KeyGenSuccess -> Screen.S3MoneyOut
-            | Screen.S2b1SelectJson    -> Screen.S2b2JsonPassword
-            | Screen.S2b2JsonPassword  -> Screen.S3MoneyOut
-            | Screen.S3MoneyOut        -> Screen.S4SelectDisk
-            | Screen.S4SelectDisk      -> Screen.S5Progress
-            | Screen.S5Progress
-            | Screen.S6Finish          -> failwith "Can't move next from here"
-            | _                        -> failwith "Unknown case"
-        (newScreen, step+1)
+    module private Private = 
     
-   
-    let getBackBtn (state: UiState) = 
-        let getVisibility = function
-            | Screen.S0Welcome
-            | Screen.S5Progress
-            | Screen.S6Finish -> false
-            | _ -> true
-        { btnBack with Visible = getVisibility <| state.CurrentScreen () }        
+        let next (state: UiState) = 
+            let getNextState (s: UiState) =
+                match state.CurrentScreen() with
+                | Screen.S0Welcome         -> s, Some Screen.S1DoYouHaveWallet
+                | Screen.S1DoYouHaveWallet -> 
+                    match state.HasWallet with 
+                    | false                -> s, Some Screen.S2a1KeyGen
+                    | true                 -> s, Some Screen.S2b1SelectJson
+                | Screen.S2a1KeyGen        -> 
+                    let ns = { s with NewKeyState = NewKeyPage.update s.NewKeyState NewKeyPage.Validate }
+                    match ns.NewKeyState.NextAllowed() with
+                    | true                 -> ns, Some Screen.S2a2KeyGenSuccess
+                    | false                -> ns, None
+                | Screen.S2a2KeyGenSuccess -> s, Some Screen.S3MoneyOut
+                | Screen.S2b1SelectJson    -> s, Some Screen.S2b2JsonPassword
+                | Screen.S2b2JsonPassword  -> s, Some Screen.S3MoneyOut
+                | Screen.S3MoneyOut        -> s, Some Screen.S4SelectDisk
+                | Screen.S4SelectDisk      -> s, Some Screen.S5Progress
+                | Screen.S5Progress
+                | Screen.S6Finish          -> failwith "Can't move next from here"
+                | _                        -> failwith "Unknown case"
+    
+            let updateStepsHistory (state: UiState, screen) = 
+                match screen with
+                | Some screen -> 
+                    { state with 
+                        CurrentStep = (screen, state.CurrentStepNum() + 1) 
+                        StepsHistory = state.CurrentStep::state.StepsHistory
+                    }
+                | _ -> state
 
-    let getNextBtn (state: UiState) = 
-        let isNextAllowed = function
-            | Screen.S2a1KeyGen -> state.NewKeyState.NextAllowed()
-            | _ -> true
-        let b = match state.CurrentScreen () with
-                | Screen.S0Welcome  -> btnBegin
-                | Screen.S6Finish   -> btnClose
-                | Screen.S5Progress -> btnHidden
-                | _                 -> btnNext
-        { b with Enabled = isNextAllowed (state.CurrentScreen()) }
+            state
+            |> getNextState
+            |> updateStepsHistory
 
-    let updateButtons (state: UiState) =
-        { state with
-            BackButton = getBackBtn state
-            NextButton = getNextBtn state
-        }
+        let updateButtons (state: UiState) =
+            let getBackBtn (state: UiState) = 
+                let getVisibility = function
+                    | Screen.S0Welcome
+                    | Screen.S5Progress
+                    | Screen.S6Finish -> false
+                    | _ -> true
+                { btnBack with Visible = getVisibility <| state.CurrentScreen () }        
 
-    let update (state: UiState) = function
-        | Back -> 
-            { state with 
-                CurrentStep = state.PrevStep ()
-                StepsHistory = state.HistoryTail()
-            } |> updateButtons
-        | Next -> 
+            let getNextBtn (state: UiState) = 
+                let isNextAllowed = function
+                    | Screen.S2a1KeyGen -> state.NewKeyState.NextAllowed()
+                    | _ -> true
+                let b = match state.CurrentScreen () with
+                        | Screen.S0Welcome  -> btnBegin
+                        | Screen.S6Finish   -> btnClose
+                        | Screen.S5Progress -> btnHidden
+                        | _                 -> btnNext
+                { b with Enabled = isNextAllowed (state.CurrentScreen()) }            
             { state with
-                CurrentStep = getNextStep state
-                StepsHistory = state.CurrentStep::state.StepsHistory
-            } |> updateButtons
-        | HasWallet hasWallet -> { state with HasWallet = hasWallet }
-        | NewKeyAction action -> 
-            let s = NewKeyPage.update state.NewKeyState action
-            { state with 
-                NewKeyState = s
-            } |> updateButtons
-        | ChangeInstallationStatus status -> { state with InstallationStatus = status }
+                BackButton = getBackBtn state
+                NextButton = getNextBtn state
+            }
+
+        let computeNewState (state: UiState) = function
+            | Back -> 
+                { state with 
+                    CurrentStep = state.PrevStep ()
+                    StepsHistory = state.HistoryTail()
+                }
+            | Next -> next state
+            | HasWallet hasWallet -> { state with HasWallet = hasWallet }
+            | NewKeyAction action -> 
+                let s = NewKeyPage.update state.NewKeyState action
+                { state with 
+                    NewKeyState = s
+                }
+            | ChangeInstallationStatus status -> { state with InstallationStatus = status }
+        
+    let update (state: UiState) =
+        (state |> Private.computeNewState) 
+        >> Private.updateButtons 
        
     let initial = {
         CurrentStep = Screen.S0Welcome, 0

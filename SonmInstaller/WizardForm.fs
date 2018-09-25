@@ -80,18 +80,13 @@ type WizardForm() as this =
             dispatch <| HasWallet this.radioHasWallet.Checked
         //#endregion
 
-        //#region step2a1 Key Generation
-        this.tbPassword.Leave.Add <| fun _ -> 
-            dispatch <| NewKeyAction (PasswordUpdate this.tbPassword.Text)
+        //#region step2a1 Generating keystore
 
         this.tbPassword.TextChanged.Add <| fun _ -> 
-            dispatch <| NewKeyAction ResetErrorMessage
-
-        this.tbPasswordRepeat.Leave.Add <| fun _ ->
-            dispatch <| NewKeyAction (PasswordRepeatUpdate this.tbPasswordRepeat.Text)
+            dispatch <| NewKeyAction (NewKeyPage.PasswordUpdate this.tbPassword.Text)
 
         this.tbPasswordRepeat.TextChanged.Add <| fun _ ->
-            dispatch <| NewKeyAction ResetErrorMessage
+            dispatch <| NewKeyAction (NewKeyPage.PasswordRepeatUpdate this.tbPasswordRepeat.Text)
 
         this.linkChooseDir.LinkClicked.Add <| fun _ -> ()
         //#endregion
