@@ -1,7 +1,8 @@
 ﻿module SonmInstaller.FormUpdate
 
 open System
-open System.Linq;
+open System.IO
+open System.Linq
 open System.Windows.Forms
 open SonmInstaller.ViewModel
 
@@ -35,6 +36,10 @@ let updateView (form: WizardFormBase) (prev: UiState) (next: UiState) force =
         updateButton form.btnBack prev.BackButton next.BackButton force
     if force || prev.NextButton <> next.NextButton then
         updateButton form.btnNext prev.NextButton next.NextButton force
+    if force || prev.NewKeyState.Path <> next.NewKeyState.Path then
+        form.lblNewKeyPath.Text <- next.NewKeyState.Path
+        form.saveNewKey.InitialDirectory <- Path.GetDirectoryName (next.NewKeyState.Path)
+        form.saveNewKey.FileName         <- Path.GetFileName      (next.NewKeyState.Path)
     form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
     updateStepNum form (next.CurrentStepNum()) totalSteps
     updateNewKey form next

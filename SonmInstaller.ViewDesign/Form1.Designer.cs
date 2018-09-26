@@ -5,7 +5,7 @@
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        public System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -26,7 +26,7 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardFormDesign));
             this.panel1 = new System.Windows.Forms.Panel();
@@ -46,7 +46,7 @@
             this.lblHeader1 = new System.Windows.Forms.Label();
             this.step2a1 = new System.Windows.Forms.TabPage();
             this.lblNewKeyErrorMessage = new System.Windows.Forms.Label();
-            this.linkChooseDir = new System.Windows.Forms.LinkLabel();
+            this.linkNewKeyPath = new System.Windows.Forms.LinkLabel();
             this.lblNewKeyPath = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
@@ -97,6 +97,7 @@
             this.linkFaq = new System.Windows.Forms.LinkLabel();
             this.label25 = new System.Windows.Forms.Label();
             this.lblHeader6 = new System.Windows.Forms.Label();
+            this.saveNewKey = new System.Windows.Forms.SaveFileDialog();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -185,7 +186,7 @@
             this.step0.Location = new System.Drawing.Point(4, 46);
             this.step0.Name = "step0";
             this.step0.Padding = new System.Windows.Forms.Padding(3);
-            this.step0.Size = new System.Drawing.Size(610, 365);
+            this.step0.Size = new System.Drawing.Size(610, 309);
             this.step0.TabIndex = 0;
             this.step0.Text = "step0";
             // 
@@ -293,7 +294,7 @@
             // 
             this.step2a1.BackColor = System.Drawing.SystemColors.Control;
             this.step2a1.Controls.Add(this.lblNewKeyErrorMessage);
-            this.step2a1.Controls.Add(this.linkChooseDir);
+            this.step2a1.Controls.Add(this.linkNewKeyPath);
             this.step2a1.Controls.Add(this.lblNewKeyPath);
             this.step2a1.Controls.Add(this.label15);
             this.step2a1.Controls.Add(this.label14);
@@ -320,15 +321,15 @@
             this.lblNewKeyErrorMessage.Text = "error message";
             this.lblNewKeyErrorMessage.Visible = false;
             // 
-            // linkChooseDir
+            // linkNewKeyPath
             // 
-            this.linkChooseDir.AutoSize = true;
-            this.linkChooseDir.Location = new System.Drawing.Point(9, 255);
-            this.linkChooseDir.Name = "linkChooseDir";
-            this.linkChooseDir.Size = new System.Drawing.Size(168, 17);
-            this.linkChooseDir.TabIndex = 6;
-            this.linkChooseDir.TabStop = true;
-            this.linkChooseDir.Text = "Choose another directory";
+            this.linkNewKeyPath.AutoSize = true;
+            this.linkNewKeyPath.Location = new System.Drawing.Point(9, 255);
+            this.linkNewKeyPath.Name = "linkNewKeyPath";
+            this.linkNewKeyPath.Size = new System.Drawing.Size(141, 17);
+            this.linkNewKeyPath.TabIndex = 6;
+            this.linkNewKeyPath.TabStop = true;
+            this.linkNewKeyPath.Text = "Choose another path";
             // 
             // lblNewKeyPath
             // 
@@ -356,8 +357,8 @@
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(392, 69);
             this.label14.TabIndex = 5;
-            this.label14.Text = "Enter a password.\r\nThis password encrypts your private key. You will need this pa" +
-    "ssword and keystore to make transactions in SONM blockchain.";
+            this.label14.Text = "Enter a password.\r\nThis password encrypts your public key. You will need this pas" +
+    "sword and keystore to make transactions in SONM blockchain.";
             // 
             // label13
             // 
@@ -807,10 +808,10 @@
             this.step6fin.Controls.Add(this.linkFaq);
             this.step6fin.Controls.Add(this.label25);
             this.step6fin.Controls.Add(this.lblHeader6);
-            this.step6fin.Location = new System.Drawing.Point(4, 25);
+            this.step6fin.Location = new System.Drawing.Point(4, 46);
             this.step6fin.Name = "step6fin";
             this.step6fin.Padding = new System.Windows.Forms.Padding(3);
-            this.step6fin.Size = new System.Drawing.Size(791, 330);
+            this.step6fin.Size = new System.Drawing.Size(610, 309);
             this.step6fin.TabIndex = 8;
             this.step6fin.Text = "step6fin";
             // 
@@ -912,7 +913,7 @@
         public System.Windows.Forms.Label lblHeader2a2;
         public System.Windows.Forms.TabPage step2a1;
         public System.Windows.Forms.Label lblNewKeyErrorMessage;
-        public System.Windows.Forms.LinkLabel linkChooseDir;
+        public System.Windows.Forms.LinkLabel linkNewKeyPath;
         public System.Windows.Forms.Label lblNewKeyPath;
         public System.Windows.Forms.Label label15;
         public System.Windows.Forms.Label label14;
@@ -938,19 +939,20 @@
         public System.Windows.Forms.LinkLabel linkSelectKeyFile;
         public System.Windows.Forms.Label lblHeader2b2;
         public System.Windows.Forms.TabPage step1choose;
-        private System.Windows.Forms.LinkLabel linkWelcome;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        public System.Windows.Forms.LinkLabel linkWelcome;
+        public System.Windows.Forms.PictureBox pictureBox1;
         public System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.LinkLabel linkLabel1;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label9;
+        public System.Windows.Forms.Label label6;
+        public System.Windows.Forms.Label label5;
+        public System.Windows.Forms.Label label4;
+        public System.Windows.Forms.Label label3;
+        public System.Windows.Forms.Label label2;
+        public System.Windows.Forms.Label label1;
+        public System.Windows.Forms.LinkLabel linkLabel1;
+        public System.Windows.Forms.Label label8;
+        public System.Windows.Forms.Label label7;
+        public System.Windows.Forms.Label label9;
+        public System.Windows.Forms.SaveFileDialog saveNewKey;
     }
 }
 

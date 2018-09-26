@@ -1,6 +1,7 @@
 ﻿module SonmInstaller.EventHandlers
 
 open SonmInstaller.ViewModel
+open System.Windows.Forms
 
 let setEventHandlers (this: WizardFormBase) dispatch = 
     this.btnBack.Click.Add <| fun _ -> dispatch Back
@@ -20,7 +21,9 @@ let setEventHandlers (this: WizardFormBase) dispatch =
     this.tbPasswordRepeat.TextChanged.Add <| fun _ ->
         dispatch <| NewKeyAction (NewKeyPage.PasswordRepeatUpdate this.tbPasswordRepeat.Text)
 
-    this.linkChooseDir.LinkClicked.Add <| fun _ ->
+    this.linkNewKeyPath.LinkClicked.Add <| fun _ ->
+        if this.saveNewKey.ShowDialog() = DialogResult.OK then
+            dispatch <| NewKeyAction (NewKeyPage.ChangeKeyPath this.saveNewKey.FileName)
             
     //#endregion
 

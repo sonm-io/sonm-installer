@@ -18,10 +18,13 @@ module Button =
     let btnClose  = createBtn "Close"
 
 module NewKeyPage = 
+    open SonmInstaller
+
     type State = {
         Password: string;
         PasswordRepeat: string;
         ErrorMessage: string option;
+        Path: string;
     }
     with
         member this.NextAllowed () = 
@@ -32,6 +35,7 @@ module NewKeyPage =
         | PasswordUpdate of string
         | PasswordRepeatUpdate of string
         | Validate
+        | ChangeKeyPath of string
 
     module private Private =
 
@@ -53,8 +57,14 @@ module NewKeyPage =
         | PasswordRepeatUpdate p -> 
             { state with PasswordRepeat = p; ErrorMessage = None }
         | Validate -> { state with ErrorMessage = Private.validateState state }
+        | ChangeKeyPath path -> { state with Path = path }
 
-    let initial = { Password = ""; PasswordRepeat = ""; ErrorMessage = None }
+    let initial = { 
+        Password = ""
+        PasswordRepeat = ""
+        ErrorMessage = None 
+        Path = Tools.defaultNewKeyPath
+    }
 
 [<AutoOpen>]
 module Main = 
@@ -178,9 +188,8 @@ module Main =
             | Next -> next state
             | HasWallet hasWallet -> { state with HasWallet = hasWallet }
             | NewKeyAction action -> 
-                let s = NewKeyPage.update state.NewKeyState action
                 { state with 
-                    NewKeyState = s
+                    NewKeyState = NewKeyPage.update state.NewKeyState action
                 }
             | ChangeInstallationStatus status -> { state with InstallationStatus = status }
         
