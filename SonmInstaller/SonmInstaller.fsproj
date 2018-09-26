@@ -45,6 +45,7 @@
     <Content Include="packages.config" />
     <Compile Include="Env.fs" />
     <Compile Include="WizardFormBase.fs" />
+    <Compile Include="ViewModel.fs" />
     <Compile Include="FormUpdate.fs" />
     <Compile Include="EventHandlers.fs" />
     <Compile Include="WizardForm.fs" />
@@ -69,11 +70,6 @@
     <ProjectReference Include="..\SonmInstaller.ViewDesign\SonmInstaller.ViewDesign.csproj">
       <Name>SonmInstaller.ViewDesign</Name>
       <Project>{c4ac0c2d-03fd-4205-ada4-5537299a869d}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\SonmInstaller.ViewModel\SonmInstaller.ViewModel.fsproj">
-      <Name>SonmInstaller.ViewModel</Name>
-      <Project>{317079a7-f61d-4b47-9fdd-ccebd97649a1}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
