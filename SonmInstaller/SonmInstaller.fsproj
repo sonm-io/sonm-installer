@@ -42,8 +42,12 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="WizardForm.fs" />
     <Content Include="packages.config" />
+    <Compile Include="Env.fs" />
+    <Compile Include="WizardFormBase.fs" />
+    <Compile Include="FormUpdate.fs" />
+    <Compile Include="EventHandlers.fs" />
+    <Compile Include="WizardForm.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>

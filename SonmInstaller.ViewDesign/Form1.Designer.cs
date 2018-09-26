@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardFormDesign));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
             this.btnBack = new System.Windows.Forms.Button();
             this.btnNext = new System.Windows.Forms.Button();
             this.tabs = new SonmInstaller.WizardPages();
@@ -96,7 +97,6 @@
             this.linkFaq = new System.Windows.Forms.LinkLabel();
             this.label25 = new System.Windows.Forms.Label();
             this.lblHeader6 = new System.Windows.Forms.Label();
-            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -120,14 +120,24 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 359);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(799, 70);
+            this.panel1.Size = new System.Drawing.Size(618, 70);
             this.panel1.TabIndex = 4;
+            // 
+            // progressBarBottom
+            // 
+            this.progressBarBottom.LabelTpl = "Download in progress: {0} of {1} MB ({2}%)";
+            this.progressBarBottom.Location = new System.Drawing.Point(10, 15);
+            this.progressBarBottom.Name = "progressBarBottom";
+            this.progressBarBottom.ProgressCurrent = 0;
+            this.progressBarBottom.ProgressTotal = 100;
+            this.progressBarBottom.Size = new System.Drawing.Size(375, 45);
+            this.progressBarBottom.TabIndex = 1;
             // 
             // btnBack
             // 
             this.btnBack.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBack.Location = new System.Drawing.Point(573, 15);
+            this.btnBack.Location = new System.Drawing.Point(392, 15);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(104, 43);
             this.btnBack.TabIndex = 0;
@@ -138,7 +148,7 @@
             // 
             this.btnNext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnNext.Location = new System.Drawing.Point(679, 15);
+            this.btnNext.Location = new System.Drawing.Point(498, 15);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(104, 43);
             this.btnNext.TabIndex = 0;
@@ -162,7 +172,7 @@
             this.tabs.Multiline = true;
             this.tabs.Name = "tabs";
             this.tabs.SelectedIndex = 0;
-            this.tabs.Size = new System.Drawing.Size(799, 359);
+            this.tabs.Size = new System.Drawing.Size(618, 359);
             this.tabs.TabIndex = 5;
             this.tabs.Tag = "header";
             // 
@@ -172,10 +182,10 @@
             this.step0.Controls.Add(this.linkWelcome);
             this.step0.Controls.Add(this.pictureBox1);
             this.step0.Controls.Add(this.lblHeader0);
-            this.step0.Location = new System.Drawing.Point(4, 25);
+            this.step0.Location = new System.Drawing.Point(4, 46);
             this.step0.Name = "step0";
             this.step0.Padding = new System.Windows.Forms.Padding(3);
-            this.step0.Size = new System.Drawing.Size(791, 330);
+            this.step0.Size = new System.Drawing.Size(610, 365);
             this.step0.TabIndex = 0;
             this.step0.Text = "step0";
             // 
@@ -197,7 +207,7 @@
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(12, 68);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(767, 102);
+            this.pictureBox1.Size = new System.Drawing.Size(586, 102);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
@@ -221,10 +231,10 @@
             this.step1choose.Controls.Add(this.radioHasWallet);
             this.step1choose.Controls.Add(this.radioNoWallet);
             this.step1choose.Controls.Add(this.lblHeader1);
-            this.step1choose.Location = new System.Drawing.Point(4, 25);
+            this.step1choose.Location = new System.Drawing.Point(4, 46);
             this.step1choose.Name = "step1choose";
             this.step1choose.Padding = new System.Windows.Forms.Padding(3);
-            this.step1choose.Size = new System.Drawing.Size(791, 330);
+            this.step1choose.Size = new System.Drawing.Size(610, 309);
             this.step1choose.TabIndex = 1;
             this.step1choose.Text = "step1choose";
             // 
@@ -292,10 +302,10 @@
             this.step2a1.Controls.Add(this.tbPasswordRepeat);
             this.step2a1.Controls.Add(this.tbPassword);
             this.step2a1.Controls.Add(this.lblHeader2a1);
-            this.step2a1.Location = new System.Drawing.Point(4, 25);
+            this.step2a1.Location = new System.Drawing.Point(4, 46);
             this.step2a1.Name = "step2a1";
             this.step2a1.Padding = new System.Windows.Forms.Padding(3);
-            this.step2a1.Size = new System.Drawing.Size(791, 330);
+            this.step2a1.Size = new System.Drawing.Size(610, 309);
             this.step2a1.TabIndex = 2;
             this.step2a1.Text = "step2a1";
             // 
@@ -344,7 +354,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label14.Location = new System.Drawing.Point(12, 60);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(573, 69);
+            this.label14.Size = new System.Drawing.Size(392, 69);
             this.label14.TabIndex = 5;
             this.label14.Text = "Enter a password.\r\nThis password encrypts your private key. You will need this pa" +
     "ssword and keystore to make transactions in SONM blockchain.";
@@ -408,10 +418,10 @@
             this.step2a2.Controls.Add(this.lblSavedKeyPath);
             this.step2a2.Controls.Add(this.label17);
             this.step2a2.Controls.Add(this.lblHeader2a2);
-            this.step2a2.Location = new System.Drawing.Point(4, 25);
+            this.step2a2.Location = new System.Drawing.Point(4, 46);
             this.step2a2.Name = "step2a2";
             this.step2a2.Padding = new System.Windows.Forms.Padding(3);
-            this.step2a2.Size = new System.Drawing.Size(791, 330);
+            this.step2a2.Size = new System.Drawing.Size(610, 309);
             this.step2a2.TabIndex = 3;
             this.step2a2.Text = "step2a2";
             // 
@@ -526,10 +536,10 @@
             this.step2b1.BackColor = System.Drawing.SystemColors.Control;
             this.step2b1.Controls.Add(this.lblHeader2b);
             this.step2b1.Controls.Add(this.btnSelectKeyFile);
-            this.step2b1.Location = new System.Drawing.Point(4, 25);
+            this.step2b1.Location = new System.Drawing.Point(4, 46);
             this.step2b1.Name = "step2b1";
             this.step2b1.Padding = new System.Windows.Forms.Padding(3);
-            this.step2b1.Size = new System.Drawing.Size(791, 330);
+            this.step2b1.Size = new System.Drawing.Size(610, 309);
             this.step2b1.TabIndex = 4;
             this.step2b1.Text = "step2b1";
             // 
@@ -539,14 +549,14 @@
             this.lblHeader2b.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblHeader2b.Location = new System.Drawing.Point(9, 16);
             this.lblHeader2b.Name = "lblHeader2b";
-            this.lblHeader2b.Size = new System.Drawing.Size(605, 31);
+            this.lblHeader2b.Size = new System.Drawing.Size(424, 62);
             this.lblHeader2b.TabIndex = 2;
             this.lblHeader2b.Tag = "header";
-            this.lblHeader2b.Text = "Step {0} of {1}. Choose your UTC/JSON keystore";
+            this.lblHeader2b.Text = "Step {0} of {1}.\r\nChoose your UTC/JSON keystore";
             // 
             // btnSelectKeyFile
             // 
-            this.btnSelectKeyFile.Location = new System.Drawing.Point(15, 77);
+            this.btnSelectKeyFile.Location = new System.Drawing.Point(15, 120);
             this.btnSelectKeyFile.Name = "btnSelectKeyFile";
             this.btnSelectKeyFile.Size = new System.Drawing.Size(154, 48);
             this.btnSelectKeyFile.TabIndex = 0;
@@ -561,9 +571,9 @@
             this.step2b2.Controls.Add(this.lblLoadedKeyPath);
             this.step2b2.Controls.Add(this.linkSelectKeyFile);
             this.step2b2.Controls.Add(this.lblHeader2b2);
-            this.step2b2.Location = new System.Drawing.Point(4, 25);
+            this.step2b2.Location = new System.Drawing.Point(4, 46);
             this.step2b2.Name = "step2b2";
-            this.step2b2.Size = new System.Drawing.Size(791, 330);
+            this.step2b2.Size = new System.Drawing.Size(610, 309);
             this.step2b2.TabIndex = 9;
             this.step2b2.Text = "step2b2";
             // 
@@ -580,7 +590,7 @@
             // 
             this.tbSelectedKeyPassword.Location = new System.Drawing.Point(15, 174);
             this.tbSelectedKeyPassword.Name = "tbSelectedKeyPassword";
-            this.tbSelectedKeyPassword.Size = new System.Drawing.Size(191, 22);
+            this.tbSelectedKeyPassword.Size = new System.Drawing.Size(216, 22);
             this.tbSelectedKeyPassword.TabIndex = 9;
             // 
             // lblLoadedKeyPath
@@ -624,10 +634,10 @@
             this.step3out.Controls.Add(this.tbThresholdAmount);
             this.step3out.Controls.Add(this.tbAddressToSend);
             this.step3out.Controls.Add(this.lblHeader3);
-            this.step3out.Location = new System.Drawing.Point(4, 25);
+            this.step3out.Location = new System.Drawing.Point(4, 46);
             this.step3out.Name = "step3out";
             this.step3out.Padding = new System.Windows.Forms.Padding(3);
-            this.step3out.Size = new System.Drawing.Size(791, 330);
+            this.step3out.Size = new System.Drawing.Size(610, 309);
             this.step3out.TabIndex = 5;
             this.step3out.Text = "step3out";
             // 
@@ -710,17 +720,17 @@
             this.step4disk.Controls.Add(this.label23);
             this.step4disk.Controls.Add(this.cmbDisk);
             this.step4disk.Controls.Add(this.lblHeader4);
-            this.step4disk.Location = new System.Drawing.Point(4, 25);
+            this.step4disk.Location = new System.Drawing.Point(4, 46);
             this.step4disk.Name = "step4disk";
             this.step4disk.Padding = new System.Windows.Forms.Padding(3);
-            this.step4disk.Size = new System.Drawing.Size(791, 330);
+            this.step4disk.Size = new System.Drawing.Size(610, 309);
             this.step4disk.TabIndex = 6;
             this.step4disk.Text = "step4disk";
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(15, 62);
+            this.label9.Location = new System.Drawing.Point(15, 115);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(399, 68);
             this.label9.TabIndex = 5;
@@ -731,7 +741,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(12, 170);
+            this.label23.Location = new System.Drawing.Point(12, 223);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(101, 17);
             this.label23.TabIndex = 4;
@@ -740,7 +750,7 @@
             // cmbDisk
             // 
             this.cmbDisk.FormattingEnabled = true;
-            this.cmbDisk.Location = new System.Drawing.Point(12, 193);
+            this.cmbDisk.Location = new System.Drawing.Point(12, 246);
             this.cmbDisk.Name = "cmbDisk";
             this.cmbDisk.Size = new System.Drawing.Size(296, 24);
             this.cmbDisk.TabIndex = 3;
@@ -751,20 +761,20 @@
             this.lblHeader4.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblHeader4.Location = new System.Drawing.Point(9, 16);
             this.lblHeader4.Name = "lblHeader4";
-            this.lblHeader4.Size = new System.Drawing.Size(767, 31);
+            this.lblHeader4.Size = new System.Drawing.Size(586, 62);
             this.lblHeader4.TabIndex = 2;
             this.lblHeader4.Tag = "header";
-            this.lblHeader4.Text = "Step {0} of {1}. Choose USB device to create installation image";
+            this.lblHeader4.Text = "Step {0} of {1}.\r\nChoose USB device to create installation image";
             // 
             // step5progress
             // 
             this.step5progress.BackColor = System.Drawing.SystemColors.Control;
             this.step5progress.Controls.Add(this.progressBar);
             this.step5progress.Controls.Add(this.lblHeader5);
-            this.step5progress.Location = new System.Drawing.Point(4, 25);
+            this.step5progress.Location = new System.Drawing.Point(4, 46);
             this.step5progress.Name = "step5progress";
             this.step5progress.Padding = new System.Windows.Forms.Padding(3);
-            this.step5progress.Size = new System.Drawing.Size(791, 330);
+            this.step5progress.Size = new System.Drawing.Size(610, 309);
             this.step5progress.TabIndex = 7;
             this.step5progress.Text = "step5progress";
             // 
@@ -773,11 +783,11 @@
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.LabelTpl = "Download in progress: {0} of {1} MB ({2}%)";
-            this.progressBar.Location = new System.Drawing.Point(15, 187);
+            this.progressBar.Location = new System.Drawing.Point(15, 141);
             this.progressBar.Name = "progressBar";
             this.progressBar.ProgressCurrent = 0;
             this.progressBar.ProgressTotal = 100;
-            this.progressBar.Size = new System.Drawing.Size(759, 45);
+            this.progressBar.Size = new System.Drawing.Size(578, 45);
             this.progressBar.TabIndex = 3;
             // 
             // lblHeader5
@@ -834,21 +844,11 @@
             this.lblHeader6.Tag = "header";
             this.lblHeader6.Text = "Done!";
             // 
-            // progressBarBottom
-            // 
-            this.progressBarBottom.LabelTpl = "Download in progress: {0} of {1} MB ({2}%)";
-            this.progressBarBottom.Location = new System.Drawing.Point(4, 15);
-            this.progressBarBottom.Name = "progressBarBottom";
-            this.progressBarBottom.ProgressCurrent = 0;
-            this.progressBarBottom.ProgressTotal = 100;
-            this.progressBarBottom.Size = new System.Drawing.Size(386, 45);
-            this.progressBarBottom.TabIndex = 1;
-            // 
             // WizardFormDesign
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(799, 429);
+            this.ClientSize = new System.Drawing.Size(618, 429);
             this.Controls.Add(this.tabs);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
