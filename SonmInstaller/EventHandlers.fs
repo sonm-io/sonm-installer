@@ -1,9 +1,15 @@
 ﻿module SonmInstaller.EventHandlers
 
-open SonmInstaller.ViewModel
+open Elmish
 open System.Windows.Forms
+open SonmInstaller.Components
+open SonmInstaller.Components.Main
 
-let setEventHandlers (this: WizardFormBase) dispatch = 
+
+let subscribeToEvents (this: WizardForm) (dispatch:Dispatch<UiStateAction>) = 
+    this.Load.Add <| fun _ ->
+        Tools.ensureSonmPathExists ()
+
     this.btnBack.Click.Add <| fun _ -> dispatch Back
 
     this.btnNext.Click.Add <| fun _ -> dispatch Next
@@ -28,9 +34,11 @@ let setEventHandlers (this: WizardFormBase) dispatch =
     //#endregion
 
     //#region step2a2 Save your key
-    this.linkOpenKeyDir.LinkClicked.Add <| fun _ -> ()
+        
+    this.linkOpenKeyDir.LinkClicked.Add <| fun _ -> dispatch OpenKeyDir
 
-    this.linkOpenKeyFile.LinkClicked.Add <| fun _ -> ()
+    this.linkOpenKeyFile.LinkClicked.Add <| fun _ -> dispatch OpenKeyFile
+
     //#endregion
 
     //#region step2b Select json-file with key
@@ -49,4 +57,3 @@ let setEventHandlers (this: WizardFormBase) dispatch =
     //#region step6 Finish
     this.linkFaq.LinkClicked.Add <| fun _ -> ()
     //#endregion
-

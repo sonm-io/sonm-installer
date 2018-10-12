@@ -314,7 +314,7 @@
             // 
             this.lblNewKeyErrorMessage.AutoSize = true;
             this.lblNewKeyErrorMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.lblNewKeyErrorMessage.Location = new System.Drawing.Point(12, 177);
+            this.lblNewKeyErrorMessage.Location = new System.Drawing.Point(12, 196);
             this.lblNewKeyErrorMessage.Name = "lblNewKeyErrorMessage";
             this.lblNewKeyErrorMessage.Size = new System.Drawing.Size(100, 17);
             this.lblNewKeyErrorMessage.TabIndex = 7;
@@ -324,7 +324,7 @@
             // linkNewKeyPath
             // 
             this.linkNewKeyPath.AutoSize = true;
-            this.linkNewKeyPath.Location = new System.Drawing.Point(9, 255);
+            this.linkNewKeyPath.Location = new System.Drawing.Point(9, 274);
             this.linkNewKeyPath.Name = "linkNewKeyPath";
             this.linkNewKeyPath.Size = new System.Drawing.Size(141, 17);
             this.linkNewKeyPath.TabIndex = 6;
@@ -334,7 +334,7 @@
             // lblNewKeyPath
             // 
             this.lblNewKeyPath.AutoSize = true;
-            this.lblNewKeyPath.Location = new System.Drawing.Point(9, 238);
+            this.lblNewKeyPath.Location = new System.Drawing.Point(9, 257);
             this.lblNewKeyPath.Name = "lblNewKeyPath";
             this.lblNewKeyPath.Size = new System.Drawing.Size(90, 17);
             this.lblNewKeyPath.TabIndex = 5;
@@ -343,7 +343,7 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(9, 209);
+            this.label15.Location = new System.Drawing.Point(9, 228);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(434, 17);
             this.label15.TabIndex = 5;
@@ -363,7 +363,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(255, 129);
+            this.label13.Location = new System.Drawing.Point(255, 148);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(118, 17);
             this.label13.TabIndex = 4;
@@ -372,7 +372,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(12, 129);
+            this.label12.Location = new System.Drawing.Point(12, 148);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(69, 17);
             this.label12.TabIndex = 4;
@@ -380,7 +380,7 @@
             // 
             // tbPasswordRepeat
             // 
-            this.tbPasswordRepeat.Location = new System.Drawing.Point(255, 152);
+            this.tbPasswordRepeat.Location = new System.Drawing.Point(255, 171);
             this.tbPasswordRepeat.Name = "tbPasswordRepeat";
             this.tbPasswordRepeat.PasswordChar = '*';
             this.tbPasswordRepeat.Size = new System.Drawing.Size(216, 22);
@@ -388,7 +388,7 @@
             // 
             // tbPassword
             // 
-            this.tbPassword.Location = new System.Drawing.Point(12, 152);
+            this.tbPassword.Location = new System.Drawing.Point(12, 171);
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.PasswordChar = '*';
             this.tbPassword.Size = new System.Drawing.Size(216, 22);
@@ -695,14 +695,14 @@
             this.tbThresholdAmount.Location = new System.Drawing.Point(15, 201);
             this.tbThresholdAmount.Name = "tbThresholdAmount";
             this.tbThresholdAmount.Size = new System.Drawing.Size(385, 22);
-            this.tbThresholdAmount.TabIndex = 3;
+            this.tbThresholdAmount.TabIndex = 2;
             // 
             // tbAddressToSend
             // 
             this.tbAddressToSend.Location = new System.Drawing.Point(15, 111);
             this.tbAddressToSend.Name = "tbAddressToSend";
             this.tbAddressToSend.Size = new System.Drawing.Size(385, 22);
-            this.tbAddressToSend.TabIndex = 3;
+            this.tbAddressToSend.TabIndex = 1;
             // 
             // lblHeader3
             // 
