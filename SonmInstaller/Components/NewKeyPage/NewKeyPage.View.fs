@@ -1,10 +1,11 @@
-﻿namespace SonmInstaller.Components.NewKeyPage
+﻿[<AutoOpen>]
+module SonmInstaller.Components.NewKeyPageView
 
 open SonmInstaller
+open SonmInstaller.Components
 
-[<AutoOpen>]
-module View =
-    let view (form: WizardForm) (state: State) =
+module NewKeyPage =
+    let view (form: WizardForm) (state: NewKeyPage.State) =
         form.lblNewKeyErrorMessage.Text <- 
             match state.ErrorMessage with
             | Some err -> err

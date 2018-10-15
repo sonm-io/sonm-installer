@@ -1,13 +1,15 @@
 ﻿namespace SonmInstaller.Components.Button
 
-type ButtonState = {
+type State = {
     Text: string;
     Enabled: bool;
     Visible: bool;
 }
 
-[<AutoOpen>]
-module Init =
+namespace SonmInstaller.Components
+open SonmInstaller.Components.Button
+
+module button =
     let private btnEmpty = { Text = ""; Enabled = true; Visible = true }
     let private createBtn text = { btnEmpty with Text = text }
     let btnHidden = { Text = ""; Enabled = true; Visible = false }

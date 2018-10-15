@@ -1,11 +1,14 @@
-﻿namespace SonmInstaller.Components.NewKeyPage
+﻿[<AutoOpen>]
+module SonmInstaller.Components.NewKeyPageUpdate
 
 open SonmInstaller.Tools
+open SonmInstaller.Components
+open SonmInstaller.Components.NewKeyPage
 
-module Update = 
+module NewKeyPage = 
     module private Private =
 
-        let validateState (state: State) = 
+        let validateState (state: NewKeyPage.State) = 
             let validate p1 p2 =
                 if p1 = "" then
                     Some "Please choose a password"
@@ -17,7 +20,7 @@ module Update =
                     None            
             validate state.Password state.PasswordRepeat
 
-    let update (state: State) = function
+    let update (state: NewKeyPage.State) = function
         | PasswordUpdate p ->
             { state with Password = p; ErrorMessage = None }
         | PasswordRepeatUpdate p -> 

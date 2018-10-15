@@ -1,13 +1,13 @@
-﻿namespace SonmInstaller.Components.Button
+﻿[<AutoOpen>]
+module SonmInstaller.Components.ButtonView
 
 open Elmish.Tools
 open System.Windows.Forms
-type private ButtonSt = SonmInstaller.Components.Button.ButtonState // Todo: namings
+open SonmInstaller.Components.Button
  
-[<AutoOpen>]
-module View =
+module Button =
 
-    let view (button: Button) (prev: ButtonSt option) (next: ButtonSt) =
+    let view (button: Button) (prev: State option) (next: State) =
         let inline doPropIf p a = doPropIfChanged prev next p a
         doPropIf (fun s -> s.Visible) (fun v -> button.Visible <- v)
         doPropIf (fun s -> s.Text) (fun v -> button.Text <- v)

@@ -3,7 +3,7 @@
 open Elmish
 open Elmish.Winforms
 open SonmInstaller.EventHandlers
-open SonmInstaller.Components.Main
+open SonmInstaller.Components
 open SonmInstaller.EventHandlers
 open System.Linq.Expressions
 
@@ -11,8 +11,8 @@ let private subscription form _ = [fun dispatch -> subscribeToEvents form dispat
 
 let getProgram (form: WizardForm) = 
     Program.mkProgram
-        Init.init
-        Update.update
-        (viewInvoker View.view form)
+        main.init
+        Main.update
+        (viewInvoker Main.view form)
     |> Program.withSubscription (subscription form)
     |> Program.withErrorHandler (fun (_, e) -> raise e)

@@ -12,16 +12,19 @@ with
         (this.Password <> "" || this.PasswordRepeat <> "")
         && Option.isNone this.ErrorMessage
 
-type Action =
+type Msg =
     | PasswordUpdate of string
     | PasswordRepeatUpdate of string
     | ChangeKeyPath of string
     | TryCreateKey
 
-[<AutoOpen>]
-module Init = 
+
+namespace SonmInstaller.Components
+open SonmInstaller.Components.NewKeyPage
+
+module newKeyPage = 
     open SonmInstaller
-    let init () = { 
+    let init = { 
         Password = ""
         PasswordRepeat = ""
         ErrorMessage = None 

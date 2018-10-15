@@ -22,13 +22,13 @@ type InstallationStatus =
     | Writing
     | Finish
 
-type UiState = {
+type State = {
     CurrentStep: Step
     StepsHistory: Step list
     InstallationStatus: InstallationStatus
     HasWallet: bool
-    BackButton: Button.ButtonState
-    NextButton: Button.ButtonState
+    BackButton: Button.State
+    NextButton: Button.State
     NewKeyState: NewKeyPage.State
 }
 with
@@ -48,21 +48,23 @@ type UiStateAction =
     | Back
     | Next
     | HasWallet of bool
-    | NewKeyAction of NewKeyPage.Action
+    | NewKeyAction of NewKeyPage.Msg
     | OpenKeyDir
     | OpenKeyFile
     | ChangeInstallationStatus of InstallationStatus
 
-[<AutoOpen>]
-module Init = 
-    open SonmInstaller.Components.Button
+
+namespace SonmInstaller.Components
+open SonmInstaller.Components.Main
+
+module main = 
     let init () =
         {
             CurrentStep = Screen.S0Welcome, 0
             StepsHistory = []
             InstallationStatus = InstallationStatus.WaitForStart
             HasWallet = false
-            BackButton = btnHidden
-            NextButton = btnBegin
-            NewKeyState = NewKeyPage.Init.init ()
+            BackButton = button.btnHidden
+            NextButton = button.btnBegin
+            NewKeyState = newKeyPage.init
         }, []
