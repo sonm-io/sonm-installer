@@ -20,7 +20,7 @@ module private Impl =
 
 open Impl
 
-let view (form: WizardForm) (prev: UiState option) (next: UiState) =
+let view (form: WizardForm) (prev: UiState option) (next: UiState) _ =
     let doIf = doIfChanged prev next
     let inline doPropIf p a = doPropIfChanged prev next p a
     
