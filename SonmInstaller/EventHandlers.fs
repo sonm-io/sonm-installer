@@ -6,7 +6,7 @@ open SonmInstaller.Components
 open SonmInstaller.Components.Main
 
 
-let subscribeToEvents (this: WizardForm) (dispatch:Dispatch<UiStateAction>) = 
+let subscribeToEvents (this: WizardForm) (dispatch: Dispatch<Main.Msg>) = 
     this.Load.Add <| fun _ ->
         Tools.ensureSonmPathExists ()
 

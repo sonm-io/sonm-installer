@@ -12,8 +12,8 @@ type Program<'arg, 'model, 'msg, 'view> = {
     init : 'arg -> 'model * Cmd<'msg>
     update : 'model -> 'msg -> 'model * Cmd<'msg> 
     subscribe : 'model -> Cmd<'msg>
-    view : 'model option -> 'model -> Dispatch<'msg> -> 'view
-    setState : 'model option -> 'model -> Dispatch<'msg> -> unit
+    view : 'model option -> 'model -> 'msg option -> 'view
+    setState : 'model option -> 'model -> 'msg option -> unit
     onError : (string*exn) -> unit
 }
 
@@ -25,7 +25,7 @@ module Program =
     let mkProgram 
         (init : 'arg -> 'model * Cmd<'msg>) 
         (update : 'model -> 'msg -> 'model * Cmd<'msg>)
-        (view : 'model option -> 'model -> Dispatch<'msg> -> 'view) =
+        (view : 'model option -> 'model -> 'msg option -> 'view) =
         { init = init
           update = update
           view = view
@@ -37,7 +37,7 @@ module Program =
     let mkSimple 
         (init : 'arg -> 'model) 
         (update : 'model -> 'msg -> 'model)
-        (view : 'model option -> 'model -> Dispatch<'msg> -> 'view) =
+        (view : 'model option -> 'model -> 'msg option -> 'view) =
         { init = init >> fun state -> state, Cmd.none
           update = fun model msg -> update model msg |> fun s -> s, Cmd.none
           view = view
@@ -91,8 +91,8 @@ module Program =
                     let! msg = mb.Receive()
                     let newState =
                         try
-                            let (model',cmd') = program.update state msg
-                            program.setState (Some state) model' mb.Post
+                            let (model', cmd') = program.update state msg
+                            program.setState (Some state) model' (Some msg)
                             cmd' |> List.iter (fun sub -> sub mb.Post)
                             model'
                         with ex ->
@@ -102,7 +102,7 @@ module Program =
                 }
             loop model
         )
-        program.setState None model inbox.Post
+        program.setState None model None
         let sub = 
             try 
                 program.subscribe model 

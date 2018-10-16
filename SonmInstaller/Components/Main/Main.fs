@@ -19,6 +19,7 @@ type Step = Screen * int // screen * stepNum
 type InstallationStatus =
     | WaitForStart
     | Downloading
+    | DownloadComplete
     | Writing
     | Finish
 
@@ -44,15 +45,15 @@ with
     member this.CurrentScreen () = this.CurrentStep |> fst
     member this.CurrentStepNum () = this.CurrentStep |> snd
 
-type UiStateAction =
+type Msg =
     | Back
     | Next
+    | DownloadProgress of int64 * int64 // bytes downloaded * total
+    | DownloadComplete
     | HasWallet of bool
     | NewKeyAction of NewKeyPage.Msg
     | OpenKeyDir
     | OpenKeyFile
-    | ChangeInstallationStatus of InstallationStatus
-
 
 namespace SonmInstaller.Components
 open SonmInstaller.Components.Main

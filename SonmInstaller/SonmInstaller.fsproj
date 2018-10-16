@@ -51,7 +51,8 @@
     <Compile Include="Elmish\Elmish.Winforms.fs" />
     <Compile Include="Domain\Interface.fs" />
     <Compile Include="Domain\Impl\Tools.fs" />
-    <Compile Include="Domain\Impl\Service.fs" />
+    <Compile Include="Domain\Impl\MockService.fs" />
+    <Compile Include="Domain\Impl\DomainService.fs" />
     <Compile Include="WizardForm.fs" />
     <Compile Include="Components\Button\Button.fs" />
     <Compile Include="Components\Button\Button.View.fs" />
