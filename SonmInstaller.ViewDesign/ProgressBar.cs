@@ -17,8 +17,8 @@ namespace SonmInstaller.UI
             InitializeComponent();
         }
 
-        public Int64 _progressTotal = 100;
-        public Int64 ProgressTotal
+        public double _progressTotal = 100;
+        public double ProgressTotal
         {
             get
             {
@@ -31,8 +31,8 @@ namespace SonmInstaller.UI
             }
         }
 
-        public Int64 _progressCurrent = 0;
-        public Int64 ProgressCurrent
+        public double _progressCurrent = 0;
+        public double ProgressCurrent
         {
             get
             {
@@ -45,7 +45,7 @@ namespace SonmInstaller.UI
             }
         }
 
-        private string _labelTpl = "Progress {0} of {1} ({2}%)";
+        private string _labelTpl = "Progress {0:0.0} of {1:0.0} ({2:0}%)";
         public string LabelTpl
         {
             get
@@ -64,7 +64,7 @@ namespace SonmInstaller.UI
         {
             if (string.IsNullOrEmpty(LabelTpl) || ProgressTotal == 0)
                 return;
-            double percentage = (double) ProgressCurrent / (double) ProgressTotal * 100;
+            double percentage = ProgressCurrent / ProgressTotal * 100;
             progressBar1.Value = int.Parse(Math.Truncate(percentage).ToString());
             lblProgress.Text = string.Format(_labelTpl, ProgressCurrent, ProgressTotal, percentage);
         }

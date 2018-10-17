@@ -11,20 +11,45 @@ open System.IO
 
 module Main = 
 
-    module private Impl =
-        let totalSteps = 6
+    module private Shared = 
+        let updateProgressBar (form: WizardForm) tpl = 
+            form.progressBar.LabelTpl       <- tpl
+            form.progressBarBottom.LabelTpl <- tpl
         
+        let resetProgressBar (form: WizardForm) = 
+            updateProgressBar form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
+
+    open Shared
+
+    let private initialView (form: WizardForm) (state: Main.State) = 
+        resetProgressBar form
+
+    module private Common =
+        let totalSteps = 6
+
+        let downloadComplete (form: WizardForm) = function
+            | Ok () -> 
+                form.pnlErrorDownload.Visible <- false
+                let text = "Download Complete"
+                form.progressBar.LabelTpl       <- text
+                form.progressBarBottom.LabelTpl <- text
+            | Error (e: exn) -> 
+                form.pnlErrorDownload.Visible <- true
+                let text = "Download Error"
+                form.progressBar.LabelTpl       <- text
+                form.progressBarBottom.LabelTpl <- text
+                let msg = 
+                    sprintf "%s. %s"
+                        e.Message
+                        (if e.InnerException <> null then e.InnerException.Message else "")
+                form.lblDownloadError.Text <- msg
+                form.lblDownloadError.Visible <- true
+
         let updateStepNum (form: WizardForm) current total =
             let label = form.HeaderLabels.[form.tabs.SelectedIndex]
             label.Text <- String.Format(form.HeaderTpls.[form.tabs.SelectedIndex], current, total)
 
-        let downloadProgress (form: WizardForm) downloaded total = 
-            form.progressBarBottom.ProgressCurrent <- downloaded
-            form.progressBar.ProgressCurrent <- downloaded
-            form.progressBarBottom.ProgressTotal <- total
-            form.progressBar.ProgressTotal <- total
-
-        let commonView (form: WizardForm) (prev: Main.State option) (next: Main.State) = 
+        let view (form: WizardForm) (prev: Main.State option) (next: Main.State) = 
             let doIf = doIfChanged prev next
             let inline doPropIf p a = doPropIfChanged prev next p a
     
@@ -37,24 +62,44 @@ module Main =
                 form.saveNewKey.FileName         <- Path.GetFileName      keyPath
             )
 
+            doPropIf (fun s -> s.InstallationProgress) (function 
+                | InstallationProgress.DownloadComplete result -> downloadComplete form result
+                | Downloading -> 
+                    resetProgressBar form
+                    form.pnlErrorDownload.Visible <- false
+                | _ -> ()
+            )
+
             form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
+            
             updateStepNum form (next.CurrentStepNum()) totalSteps
+            
             NewKeyPage.view form next.NewKeyState
+            
             form.progressBarBottom.Visible <- 
                 let cs = next.CurrentScreen ()
                 cs > Screen.S0Welcome 
                 && cs < Screen.S5Progress 
-                && [ InstallationStatus.Downloading ] |> List.contains next.InstallationStatus
+                //&& [ InstallationProgress.Downloading ] |> List.contains next.InstallationProgress
 
-        let messageView (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
-            match msg with
-            | DownloadProgress (downloaded, total) -> downloadProgress form downloaded total
-            | _ -> commonView form prev next           
-
-    open Impl
-
-    let view (form: WizardForm) (prev: Main.State option) (next: Main.State) = function
-        | Some msg -> messageView form prev next msg
-        | _        -> commonView  form prev next
+    module private Messaged = 
         
-        
+        let downloadProgress (form: WizardForm) downloaded total = 
+            let d = (double downloaded) / 1024. / 1024.
+            let t = (double total) / 1024. / 1024.
+            form.progressBarBottom.ProgressTotal <- t
+            form.progressBar.ProgressTotal <- t
+            form.progressBarBottom.ProgressCurrent <- d
+            form.progressBar.ProgressCurrent <- d
+
+    let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
+        match msg with
+        | DownloadProgress (downloaded, total) -> Messaged.downloadProgress form downloaded total
+        | _ -> Common.view form prev next 
+
+    let view (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
+        if Option.isNone prev then
+            initialView form next
+        match msg with
+            | Some msg -> messagedView form prev next msg
+            | _        -> Common.view  form prev next

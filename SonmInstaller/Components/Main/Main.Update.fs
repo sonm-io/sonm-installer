@@ -11,6 +11,15 @@ module Main =
     module private Impl = 
         open SonmInstaller.Domain
     
+        let startDownload service dispatch =
+            let progressCb bytesDownloaded total = 
+                DownloadProgress (bytesDownloaded, total) |> dispatch
+                System.Console.WriteLine ("progressCb: {0}", bytesDownloaded)
+            let completeCb = DownloadComplete >> dispatch 
+            service.startDownload
+                progressCb
+                completeCb
+
         let next (service: Service) (state: Main.State) = 
 
             let getNextState (service: Service) (s: Main.State) =
@@ -19,17 +28,12 @@ module Main =
                 
                 match state.CurrentScreen() with
                 | Screen.S0Welcome         -> 
-                    let sub dispatch =
-                        let progressCb bytesDownloaded total = 
-                            DownloadProgress (bytesDownloaded, total) |> dispatch
-                            System.Console.WriteLine ("progressCb: {0}", bytesDownloaded)
-                        let completeCb = fun () -> dispatch DownloadComplete
-                        
-                        service.startDownload
-                            progressCb
-                            completeCb
-                    let ns = { s with InstallationStatus = Downloading }
-                    ns, [sub], Some Screen.S1DoYouHaveWallet
+                    let cmd = 
+                        match s.InstallationProgress with
+                        | WaitForStart -> Cmd.ofSub (fun d -> d StartDownload)
+                        | _            -> Cmd.none
+                    let ns = { s with InstallationProgress = Downloading }
+                    ns, cmd, Some Screen.S1DoYouHaveWallet
                 | Screen.S1DoYouHaveWallet -> 
                     match state.HasWallet with 
                     | false                -> goTo Screen.S2a1KeyGen
@@ -86,26 +90,29 @@ module Main =
                 NextButton = getNextBtn state
             }, cmd
 
-        let computeNewState (service: Service) (state: State) = function
+        let computeNewState (service: Service) (s: State) = function
             | Back -> 
-                { state with 
-                    CurrentStep = state.PrevStep ()
-                    StepsHistory = state.HistoryTail()
+                { s with 
+                    CurrentStep = s.PrevStep ()
+                    StepsHistory = s.HistoryTail()
                 }, []
-            | Next -> next service state
-            | HasWallet hasWallet -> { state with HasWallet = hasWallet }, []
+            | Next -> next service s
+            | StartDownload -> 
+                let ns = { s with InstallationProgress = Downloading }
+                ns, Cmd.ofSub (startDownload service)
+            | HasWallet hasWallet -> { s with HasWallet = hasWallet }, []
             | NewKeyAction action -> 
-                { state with 
-                    NewKeyState = NewKeyPage.update state.NewKeyState action
+                { s with 
+                    NewKeyState = NewKeyPage.update s.NewKeyState action
                 }, []
             | OpenKeyDir -> 
-                service.openKeyFolder state.NewKeyState.KeyPath
-                state, []
+                service.openKeyFolder s.NewKeyState.KeyPath
+                s, []
             | OpenKeyFile -> 
-                service.openKeyFile state.NewKeyState.KeyPath
-                state, []
-            | DownloadProgress (_, _) -> state, []
-            | DownloadComplete -> { state with InstallationStatus = InstallationStatus.DownloadComplete }, []
+                service.openKeyFile s.NewKeyState.KeyPath
+                s, []
+            | DownloadProgress (_, _) -> s, []
+            | DownloadComplete res -> { s with InstallationProgress = InstallationProgress.DownloadComplete res }, []
         
     open Impl
 

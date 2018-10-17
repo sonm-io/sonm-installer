@@ -5,7 +5,7 @@ open System.Threading
 
 module private Impl =
 
-    let startDownload (progressCb: int64 -> int64 -> unit) (completeCb: unit -> unit) =
+    let startDownload (progressCb: int64 -> int64 -> unit) (completeCb: Result<unit, exn> -> unit) =
         let time = 10L * 1000L // ms
         let deltaTime = 100  // ms
         let total = 1000L
@@ -17,19 +17,13 @@ module private Impl =
             if progress < total then
                 loop (progress + batch)
             else 
-                completeCb ()
+                completeCb (Ok ())
 
         Async.Start <| async {
             loop 0L
         } 
         
         Console.WriteLine("StartDownload")
-
-    let startDownload2 (progressCb: int64 -> int64 -> unit) (completeCb: unit -> unit) =
-        Console.WriteLine("StartDownload")
-        progressCb (int64 5) (int64 10)
-        completeCb ()
-
 
     let consoleWrite header message = Console.WriteLine ("{0}: {1}", header, message)
 

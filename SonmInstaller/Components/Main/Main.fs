@@ -16,17 +16,17 @@ type Screen =
     
 type Step = Screen * int // screen * stepNum
 
-type InstallationStatus =
+type InstallationProgress =
     | WaitForStart
     | Downloading
-    | DownloadComplete
+    | DownloadComplete of Result<unit, exn>
     | Writing
     | Finish
 
 type State = {
     CurrentStep: Step
     StepsHistory: Step list
-    InstallationStatus: InstallationStatus
+    InstallationProgress: InstallationProgress
     HasWallet: bool
     BackButton: Button.State
     NextButton: Button.State
@@ -48,8 +48,9 @@ with
 type Msg =
     | Back
     | Next
+    | StartDownload
     | DownloadProgress of int64 * int64 // bytes downloaded * total
-    | DownloadComplete
+    | DownloadComplete of Result<unit, exn>
     | HasWallet of bool
     | NewKeyAction of NewKeyPage.Msg
     | OpenKeyDir
@@ -63,7 +64,7 @@ module main =
         {
             CurrentStep = Screen.S0Welcome, 0
             StepsHistory = []
-            InstallationStatus = InstallationStatus.WaitForStart
+            InstallationProgress = InstallationProgress.WaitForStart
             HasWallet = false
             BackButton = button.btnHidden
             NextButton = button.btnBegin

@@ -12,12 +12,18 @@ module private Impl =
 
     let subscription form _ = [fun dispatch -> subscribeToEvents form dispatch]
 
+    type ServiceType = Real | Mock
+
+    let getService = function
+        | Real -> (new DomainService()).GetService()
+        | Mock -> Mock.service
+
 open Impl
 
 let getProgram (form: WizardForm) = 
     Program.mkProgram
         main.init
-        (Main.update Mock.service)
+        (Real |> getService |> Main.update)
         (viewInvoker Main.view form)
     |> Program.withSubscription (subscription form)
     |> Program.withErrorHandler (fun (_, e) -> raise e)

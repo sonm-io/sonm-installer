@@ -9,12 +9,12 @@ let homePath =
     else
         Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
 
-let sonmPath = Path.Combine(homePath, "SONM")
+let appPath = Path.Combine(homePath, "SONM")
 
-let ensureSonmPathExists () =
-    if Directory.Exists(sonmPath) |> not then Directory.CreateDirectory(sonmPath) |> ignore
+let ensureAppPathExists () =
+    if Directory.Exists(appPath) |> not then Directory.CreateDirectory(appPath) |> ignore
         
-let defaultNewKeyPath = Path.Combine(sonmPath, "key.json")
+let defaultNewKeyPath = Path.Combine(appPath, "key.json")
 
 let generateNewKey password = sprintf "new key content with password: %s" password
 

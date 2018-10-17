@@ -5,10 +5,9 @@ open System.Windows.Forms
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
 
-
 let subscribeToEvents (this: WizardForm) (dispatch: Dispatch<Main.Msg>) = 
     this.Load.Add <| fun _ ->
-        Tools.ensureSonmPathExists ()
+        Tools.ensureAppPathExists ()
 
     this.btnBack.Click.Add <| fun _ -> dispatch Back
 
@@ -52,6 +51,10 @@ let subscribeToEvents (this: WizardForm) (dispatch: Dispatch<Main.Msg>) =
 
     //#region step4 Select disk to write to
     this.cmbDisk.SelectedValueChanged.Add <| fun _ -> ()
+    //#endregion
+
+    //#region step5progress Preparing installation image
+    this.btnTryAgainDownload.Click.Add <| fun _ -> dispatch StartDownload
     //#endregion
 
     //#region step6 Finish
