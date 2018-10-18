@@ -30,10 +30,11 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardFormDesign));
             this.panel1 = new System.Windows.Forms.Panel();
-            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
             this.btnBack = new System.Windows.Forms.Button();
             this.btnNext = new System.Windows.Forms.Button();
             this.saveNewKey = new System.Windows.Forms.SaveFileDialog();
+            this.loader = new System.Windows.Forms.ProgressBar();
+            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
             this.tabs = new SonmInstaller.WizardPages();
             this.step0 = new System.Windows.Forms.TabPage();
             this.linkWelcome = new System.Windows.Forms.LinkLabel();
@@ -92,6 +93,8 @@
             this.cmbDisk = new System.Windows.Forms.ComboBox();
             this.lblHeader4 = new System.Windows.Forms.Label();
             this.step5progress = new System.Windows.Forms.TabPage();
+            this.pnlErrorDownload = new System.Windows.Forms.Panel();
+            this.btnTryAgainDownload = new System.Windows.Forms.Button();
             this.lblDownloadError = new System.Windows.Forms.Label();
             this.progressBar = new SonmInstaller.UI.ProgressBar();
             this.lblHeader5 = new System.Windows.Forms.Label();
@@ -99,8 +102,6 @@
             this.linkFaq = new System.Windows.Forms.LinkLabel();
             this.label25 = new System.Windows.Forms.Label();
             this.lblHeader6 = new System.Windows.Forms.Label();
-            this.pnlErrorDownload = new System.Windows.Forms.Panel();
-            this.btnTryAgainDownload = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -113,32 +114,21 @@
             this.step3out.SuspendLayout();
             this.step4disk.SuspendLayout();
             this.step5progress.SuspendLayout();
-            this.step6fin.SuspendLayout();
             this.pnlErrorDownload.SuspendLayout();
+            this.step6fin.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.progressBarBottom);
             this.panel1.Controls.Add(this.btnBack);
+            this.panel1.Controls.Add(this.progressBarBottom);
             this.panel1.Controls.Add(this.btnNext);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 360);
+            this.panel1.Location = new System.Drawing.Point(0, 353);
             this.panel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(619, 70);
+            this.panel1.Size = new System.Drawing.Size(619, 77);
             this.panel1.TabIndex = 4;
-            // 
-            // progressBarBottom
-            // 
-            this.progressBarBottom.LabelTpl = "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)";
-            this.progressBarBottom.Location = new System.Drawing.Point(11, 15);
-            this.progressBarBottom.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.progressBarBottom.Name = "progressBarBottom";
-            this.progressBarBottom.ProgressCurrent = 0D;
-            this.progressBarBottom.ProgressTotal = 100D;
-            this.progressBarBottom.Size = new System.Drawing.Size(375, 46);
-            this.progressBarBottom.TabIndex = 1;
             // 
             // btnBack
             // 
@@ -147,7 +137,7 @@
             this.btnBack.Location = new System.Drawing.Point(392, 15);
             this.btnBack.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnBack.Name = "btnBack";
-            this.btnBack.Size = new System.Drawing.Size(104, 43);
+            this.btnBack.Size = new System.Drawing.Size(104, 50);
             this.btnBack.TabIndex = 0;
             this.btnBack.Text = "Back";
             this.btnBack.UseVisualStyleBackColor = true;
@@ -159,10 +149,31 @@
             this.btnNext.Location = new System.Drawing.Point(499, 15);
             this.btnNext.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnNext.Name = "btnNext";
-            this.btnNext.Size = new System.Drawing.Size(104, 43);
+            this.btnNext.Size = new System.Drawing.Size(104, 50);
             this.btnNext.TabIndex = 0;
             this.btnNext.Text = "Next";
             this.btnNext.UseVisualStyleBackColor = true;
+            // 
+            // loader
+            // 
+            this.loader.Location = new System.Drawing.Point(392, 320);
+            this.loader.MarqueeAnimationSpeed = 25;
+            this.loader.Name = "loader";
+            this.loader.Size = new System.Drawing.Size(211, 23);
+            this.loader.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.loader.TabIndex = 6;
+            this.loader.Visible = false;
+            // 
+            // progressBarBottom
+            // 
+            this.progressBarBottom.LabelTpl = "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)";
+            this.progressBarBottom.Location = new System.Drawing.Point(11, 15);
+            this.progressBarBottom.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.progressBarBottom.Name = "progressBarBottom";
+            this.progressBarBottom.ProgressCurrent = 0D;
+            this.progressBarBottom.ProgressTotal = 100D;
+            this.progressBarBottom.Size = new System.Drawing.Size(375, 50);
+            this.progressBarBottom.TabIndex = 1;
             // 
             // tabs
             // 
@@ -176,13 +187,14 @@
             this.tabs.Controls.Add(this.step4disk);
             this.tabs.Controls.Add(this.step5progress);
             this.tabs.Controls.Add(this.step6fin);
+            this.tabs.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.tabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabs.Location = new System.Drawing.Point(0, 0);
             this.tabs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabs.Multiline = true;
             this.tabs.Name = "tabs";
             this.tabs.SelectedIndex = 0;
-            this.tabs.Size = new System.Drawing.Size(619, 360);
+            this.tabs.Size = new System.Drawing.Size(619, 430);
             this.tabs.TabIndex = 5;
             this.tabs.Tag = "header";
             // 
@@ -196,7 +208,7 @@
             this.step0.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step0.Name = "step0";
             this.step0.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step0.Size = new System.Drawing.Size(611, 310);
+            this.step0.Size = new System.Drawing.Size(611, 380);
             this.step0.TabIndex = 0;
             this.step0.Text = "step0";
             // 
@@ -247,7 +259,7 @@
             this.step1choose.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step1choose.Name = "step1choose";
             this.step1choose.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step1choose.Size = new System.Drawing.Size(611, 310);
+            this.step1choose.Size = new System.Drawing.Size(611, 380);
             this.step1choose.TabIndex = 1;
             this.step1choose.Text = "step1choose";
             // 
@@ -321,7 +333,7 @@
             this.step2a1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step2a1.Name = "step2a1";
             this.step2a1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step2a1.Size = new System.Drawing.Size(611, 310);
+            this.step2a1.Size = new System.Drawing.Size(611, 380);
             this.step2a1.TabIndex = 2;
             this.step2a1.Text = "step2a1";
             // 
@@ -360,9 +372,9 @@
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(9, 228);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(434, 17);
+            this.label15.Size = new System.Drawing.Size(442, 17);
             this.label15.TabIndex = 5;
-            this.label15.Text = "Your UTC/JSON keystore containing your pivate key will be save to:";
+            this.label15.Text = "Your UTC/JSON keystore containing your pivate key will be saved to:";
             // 
             // label14
             // 
@@ -440,7 +452,7 @@
             this.step2a2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step2a2.Name = "step2a2";
             this.step2a2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step2a2.Size = new System.Drawing.Size(611, 310);
+            this.step2a2.Size = new System.Drawing.Size(611, 380);
             this.step2a2.TabIndex = 3;
             this.step2a2.Text = "step2a2";
             // 
@@ -524,7 +536,7 @@
             // lblSavedKeyPath
             // 
             this.lblSavedKeyPath.AutoSize = true;
-            this.lblSavedKeyPath.Location = new System.Drawing.Point(15, 103);
+            this.lblSavedKeyPath.Location = new System.Drawing.Point(15, 93);
             this.lblSavedKeyPath.Name = "lblSavedKeyPath";
             this.lblSavedKeyPath.Size = new System.Drawing.Size(162, 17);
             this.lblSavedKeyPath.TabIndex = 3;
@@ -559,7 +571,7 @@
             this.step2b1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step2b1.Name = "step2b1";
             this.step2b1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step2b1.Size = new System.Drawing.Size(611, 310);
+            this.step2b1.Size = new System.Drawing.Size(611, 380);
             this.step2b1.TabIndex = 4;
             this.step2b1.Text = "step2b1";
             // 
@@ -595,7 +607,7 @@
             this.step2b2.Location = new System.Drawing.Point(4, 46);
             this.step2b2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step2b2.Name = "step2b2";
-            this.step2b2.Size = new System.Drawing.Size(611, 310);
+            this.step2b2.Size = new System.Drawing.Size(611, 380);
             this.step2b2.TabIndex = 9;
             this.step2b2.Text = "step2b2";
             // 
@@ -661,7 +673,7 @@
             this.step3out.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step3out.Name = "step3out";
             this.step3out.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step3out.Size = new System.Drawing.Size(611, 310);
+            this.step3out.Size = new System.Drawing.Size(611, 380);
             this.step3out.TabIndex = 5;
             this.step3out.Text = "step3out";
             // 
@@ -750,7 +762,7 @@
             this.step4disk.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step4disk.Name = "step4disk";
             this.step4disk.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step4disk.Size = new System.Drawing.Size(611, 310);
+            this.step4disk.Size = new System.Drawing.Size(611, 380);
             this.step4disk.TabIndex = 6;
             this.step4disk.Text = "step4disk";
             // 
@@ -804,9 +816,28 @@
             this.step5progress.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step5progress.Name = "step5progress";
             this.step5progress.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step5progress.Size = new System.Drawing.Size(611, 310);
+            this.step5progress.Size = new System.Drawing.Size(611, 380);
             this.step5progress.TabIndex = 7;
             this.step5progress.Text = "step5progress";
+            // 
+            // pnlErrorDownload
+            // 
+            this.pnlErrorDownload.Controls.Add(this.btnTryAgainDownload);
+            this.pnlErrorDownload.Controls.Add(this.lblDownloadError);
+            this.pnlErrorDownload.Location = new System.Drawing.Point(15, 153);
+            this.pnlErrorDownload.Name = "pnlErrorDownload";
+            this.pnlErrorDownload.Size = new System.Drawing.Size(579, 140);
+            this.pnlErrorDownload.TabIndex = 5;
+            this.pnlErrorDownload.Visible = false;
+            // 
+            // btnTryAgainDownload
+            // 
+            this.btnTryAgainDownload.Location = new System.Drawing.Point(480, 4);
+            this.btnTryAgainDownload.Name = "btnTryAgainDownload";
+            this.btnTryAgainDownload.Size = new System.Drawing.Size(96, 39);
+            this.btnTryAgainDownload.TabIndex = 5;
+            this.btnTryAgainDownload.Text = "Try Again";
+            this.btnTryAgainDownload.UseVisualStyleBackColor = true;
             // 
             // lblDownloadError
             // 
@@ -850,7 +881,7 @@
             this.step6fin.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step6fin.Name = "step6fin";
             this.step6fin.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.step6fin.Size = new System.Drawing.Size(611, 310);
+            this.step6fin.Size = new System.Drawing.Size(611, 380);
             this.step6fin.TabIndex = 8;
             this.step6fin.Text = "step6fin";
             // 
@@ -884,32 +915,14 @@
             this.lblHeader6.Tag = "header";
             this.lblHeader6.Text = "Done!";
             // 
-            // pnlErrorDownload
-            // 
-            this.pnlErrorDownload.Controls.Add(this.btnTryAgainDownload);
-            this.pnlErrorDownload.Controls.Add(this.lblDownloadError);
-            this.pnlErrorDownload.Location = new System.Drawing.Point(15, 153);
-            this.pnlErrorDownload.Name = "pnlErrorDownload";
-            this.pnlErrorDownload.Size = new System.Drawing.Size(579, 140);
-            this.pnlErrorDownload.TabIndex = 5;
-            this.pnlErrorDownload.Visible = false;
-            // 
-            // btnTryAgainDownload
-            // 
-            this.btnTryAgainDownload.Location = new System.Drawing.Point(480, 4);
-            this.btnTryAgainDownload.Name = "btnTryAgainDownload";
-            this.btnTryAgainDownload.Size = new System.Drawing.Size(96, 39);
-            this.btnTryAgainDownload.TabIndex = 5;
-            this.btnTryAgainDownload.Text = "Try Again";
-            this.btnTryAgainDownload.UseVisualStyleBackColor = true;
-            // 
             // WizardFormDesign
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(619, 430);
-            this.Controls.Add(this.tabs);
+            this.Controls.Add(this.loader);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.tabs);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
@@ -936,9 +949,9 @@
             this.step4disk.PerformLayout();
             this.step5progress.ResumeLayout(false);
             this.step5progress.PerformLayout();
+            this.pnlErrorDownload.ResumeLayout(false);
             this.step6fin.ResumeLayout(false);
             this.step6fin.PerformLayout();
-            this.pnlErrorDownload.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1016,6 +1029,7 @@
         public System.Windows.Forms.Label lblDownloadError;
         public System.Windows.Forms.Panel pnlErrorDownload;
         public System.Windows.Forms.Button btnTryAgainDownload;
+        public System.Windows.Forms.ProgressBar loader;
     }
 }
 

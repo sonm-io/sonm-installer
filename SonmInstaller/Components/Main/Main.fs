@@ -44,6 +44,7 @@ with
         | _ -> this.CurrentStep
     member this.CurrentScreen () = this.CurrentStep |> fst
     member this.CurrentStepNum () = this.CurrentStep |> snd
+    member this.IsPending () = this.NewKeyState.IsPending
 
 type Msg =
     | Back
@@ -56,17 +57,3 @@ type Msg =
     | OpenKeyDir
     | OpenKeyFile
 
-namespace SonmInstaller.Components
-open SonmInstaller.Components.Main
-
-module main = 
-    let init () =
-        {
-            CurrentStep = Screen.S0Welcome, 0
-            StepsHistory = []
-            InstallationProgress = InstallationProgress.WaitForStart
-            HasWallet = false
-            BackButton = button.btnHidden
-            NextButton = button.btnBegin
-            NewKeyState = newKeyPage.init
-        }, []

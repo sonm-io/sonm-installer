@@ -12,17 +12,23 @@ open System.IO
 module Main = 
 
     module private Shared = 
-        let updateProgressBar (form: WizardForm) tpl = 
-            form.progressBar.LabelTpl       <- tpl
-            form.progressBarBottom.LabelTpl <- tpl
         
-        let resetProgressBar (form: WizardForm) = 
-            updateProgressBar form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
+        module DownloadProgressBar = 
+            let update (form: WizardForm) tpl = 
+                form.progressBar.LabelTpl       <- tpl
+                form.progressBarBottom.LabelTpl <- tpl
+        
+            let reset (form: WizardForm) = 
+                update form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
+        
+
+        let switchLoader (form: WizardForm) (show: bool) = 
+            form.loader.Visible <- show
 
     open Shared
 
     let private initialView (form: WizardForm) (state: Main.State) = 
-        resetProgressBar form
+        DownloadProgressBar.reset form
 
     module private Common =
         let totalSteps = 6
@@ -65,10 +71,12 @@ module Main =
             doPropIf (fun s -> s.InstallationProgress) (function 
                 | InstallationProgress.DownloadComplete result -> downloadComplete form result
                 | Downloading -> 
-                    resetProgressBar form
+                    DownloadProgressBar.reset form
                     form.pnlErrorDownload.Visible <- false
                 | _ -> ()
             )
+
+            doPropIf (fun s -> s.IsPending()) (fun isPending -> form.loader.Visible <- isPending) 
 
             form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
             

@@ -5,6 +5,8 @@ open System.IO
 open System.Configuration
 open SonmInstaller.Tools
 
+
+
 module private Impl = 
     let startProc (path: string) = path |> Process.Start |> ignore
     let openKeyFile path = path |> Path.GetFileName |> startProc
@@ -21,11 +23,18 @@ type DomainService () =
     let sonmOsImageDestination = 
         Path.Combine (appPath, Path.GetFileName sonmOsImageUrl)
 
+    //let generateKeyStore password = async {
+    //    let (fileName, json) = Blockchain.generateKeyStore password
+    //    let path = Path.Combine (dir, fileName)
+    //    File.WriteAllText (path, json)
+    //}
+
     do  
         ensureAppPathExists () 
 
     member __.GetService () = {
         startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
+        generateKeyStore = Mock.service.generateKeyStore
         openKeyFolder = startProc
         openKeyFile = openKeyFile
     }

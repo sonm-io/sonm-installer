@@ -49,11 +49,6 @@
     <Compile Include="Elmish\Elmish.Cmd.fs" />
     <Compile Include="Elmish\Elmish.Program.fs" />
     <Compile Include="Elmish\Elmish.Winforms.fs" />
-    <Compile Include="Domain\Interface.fs" />
-    <Compile Include="Domain\Impl\Tools.fs" />
-    <Compile Include="Domain\Impl\MockService.fs" />
-    <Compile Include="Domain\Impl\Download.fs" />
-    <Compile Include="Domain\Impl\DomainService.fs" />
     <Compile Include="WizardForm.fs" />
     <Compile Include="Components\Button\Button.fs" />
     <Compile Include="Components\Button\Button.View.fs" />
@@ -63,6 +58,12 @@
     <Compile Include="Components\Main\Main.fs" />
     <Compile Include="Components\Main\Main.Update.fs" />
     <Compile Include="Components\Main\Main.View.fs" />
+    <Compile Include="Tools.fs" />
+    <Compile Include="Domain\Interface.fs" />
+    <Compile Include="Domain\Impl\MockService.fs" />
+    <Compile Include="Domain\Impl\Download.fs" />
+    <Compile Include="Domain\Impl\Blockchain.fs" />
+    <Compile Include="Domain\Impl\DomainService.fs" />
     <Compile Include="EventHandlers.fs" />
     <Compile Include="Program.fs" />
     <Compile Include="Main.fs" />

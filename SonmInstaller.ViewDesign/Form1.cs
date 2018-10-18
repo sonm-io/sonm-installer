@@ -18,5 +18,6 @@ namespace SonmInstaller
         {
             Process.Start(e.Link.LinkData as string);
         }
+
     }
 }

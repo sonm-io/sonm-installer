@@ -5,6 +5,8 @@ open System.Threading
 
 module private Impl =
 
+    let consoleWrite header message = Console.WriteLine ("{0}: {1}", header, message)
+
     let startDownload (progressCb: int64 -> int64 -> unit) (completeCb: Result<unit, exn> -> unit) =
         let time = 10L * 1000L // ms
         let deltaTime = 100  // ms
@@ -25,10 +27,14 @@ module private Impl =
         
         Console.WriteLine("StartDownload")
 
-    let consoleWrite header message = Console.WriteLine ("{0}: {1}", header, message)
+    let generateKeyStore password = async {
+        do! Async.Sleep 4000
+    }
 
 let service = {
     startDownload = Impl.startDownload
+    generateKeyStore = Impl.generateKeyStore
     openKeyFolder = Impl.consoleWrite "openKeyFolder"
     openKeyFile = Impl.consoleWrite "openKeyFolder"
 }
+
