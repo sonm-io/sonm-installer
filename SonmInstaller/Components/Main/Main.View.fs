@@ -4,10 +4,12 @@ module SonmInstaller.Components.MainView
 open SonmInstaller
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
+open SonmInstaller.Components.Main.Msg
 open Elmish.Tools
 
 open System
 open System.IO
+open System.Windows.Forms
 
 module Main = 
 
@@ -22,13 +24,18 @@ module Main =
                 update form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
         
 
-        let switchLoader (form: WizardForm) (show: bool) = 
-            form.loader.Visible <- show
-
     open Shared
 
-    let private initialView (form: WizardForm) (state: Main.State) = 
-        DownloadProgressBar.reset form
+    module private Initial =
+        
+        let addDrives (form: WizardForm) = 
+            Tools.getDrives ()
+            |> List.iter (fun i -> form.cmbDisk.Items.Add i |> ignore)
+
+        let view (form: WizardForm) (state: Main.State) = 
+            DownloadProgressBar.reset form
+            addDrives form
+        
 
     module private Common =
         let totalSteps = 6
@@ -76,7 +83,12 @@ module Main =
                 | _ -> ()
             )
 
-            doPropIf (fun s -> s.IsPending()) (fun isPending -> form.loader.Visible <- isPending) 
+            doPropIf (fun s -> s.EtherAddress) (function 
+                | Some addr -> addr
+                | None      -> String.Empty
+            >> fun addr  -> form.tbAddressToSend.Text <- addr)
+
+            doPropIf (fun s -> s.IsPending) (fun isPending -> form.loader.Visible <- isPending) 
 
             form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
             
@@ -102,12 +114,14 @@ module Main =
 
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
         match msg with
-        | DownloadProgress (downloaded, total) -> Messaged.downloadProgress form downloaded total
-        | _ -> Common.view form prev next 
+        | Msg.Download (Download.Progress (downloaded, total)) -> 
+            Messaged.downloadProgress form downloaded total
+        | _ -> 
+            Common.view form prev next 
 
     let view (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
         if Option.isNone prev then
-            initialView form next
+            Initial.view form next
         match msg with
             | Some msg -> messagedView form prev next msg
             | _        -> Common.view  form prev next

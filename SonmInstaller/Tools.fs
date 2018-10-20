@@ -3,6 +3,11 @@
 open System
 open System.IO
 
+type ListItem (value: int, text: string) =
+    member val Value = value with get, set
+    member val Text = text with get, set
+    override x.ToString () = x.Text
+
 let homePath = 
     if Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX then
         Environment.GetEnvironmentVariable("HOME")
@@ -20,3 +25,11 @@ let generateNewKey password = sprintf "new key content with password: %s" passwo
 
 let saveTextFile path content =
     File.WriteAllText(path, content)
+
+let getDrives () = 
+    [
+        1, "C:"
+        2, "D:"
+        3, "E:"
+    ]
+    |> List.map (fun (value, text) -> new ListItem (value, text))

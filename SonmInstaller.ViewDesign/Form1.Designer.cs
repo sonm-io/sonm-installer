@@ -94,7 +94,7 @@
             this.lblHeader4 = new System.Windows.Forms.Label();
             this.step5progress = new System.Windows.Forms.TabPage();
             this.pnlErrorDownload = new System.Windows.Forms.Panel();
-            this.btnTryAgainDownload = new System.Windows.Forms.Button();
+            this.btnTryAgainProgress = new System.Windows.Forms.Button();
             this.lblDownloadError = new System.Windows.Forms.Label();
             this.progressBar = new SonmInstaller.UI.ProgressBar();
             this.lblHeader5 = new System.Windows.Forms.Label();
@@ -102,6 +102,11 @@
             this.linkFaq = new System.Windows.Forms.LinkLabel();
             this.label25 = new System.Windows.Forms.Label();
             this.lblHeader6 = new System.Windows.Forms.Label();
+            this.messagePage = new System.Windows.Forms.TabPage();
+            this.btnMessagePageTryAgain = new System.Windows.Forms.Button();
+            this.lblMessagePageText = new System.Windows.Forms.Label();
+            this.lblMessagePageHeader = new System.Windows.Forms.Label();
+            this.openKeystore = new System.Windows.Forms.SaveFileDialog();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -116,6 +121,7 @@
             this.step5progress.SuspendLayout();
             this.pnlErrorDownload.SuspendLayout();
             this.step6fin.SuspendLayout();
+            this.messagePage.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -187,6 +193,7 @@
             this.tabs.Controls.Add(this.step4disk);
             this.tabs.Controls.Add(this.step5progress);
             this.tabs.Controls.Add(this.step6fin);
+            this.tabs.Controls.Add(this.messagePage);
             this.tabs.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.tabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabs.Location = new System.Drawing.Point(0, 0);
@@ -732,6 +739,7 @@
             this.tbThresholdAmount.Name = "tbThresholdAmount";
             this.tbThresholdAmount.Size = new System.Drawing.Size(385, 22);
             this.tbThresholdAmount.TabIndex = 2;
+            this.tbThresholdAmount.Text = "1000";
             // 
             // tbAddressToSend
             // 
@@ -788,6 +796,7 @@
             // 
             // cmbDisk
             // 
+            this.cmbDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbDisk.FormattingEnabled = true;
             this.cmbDisk.Location = new System.Drawing.Point(12, 246);
             this.cmbDisk.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -822,7 +831,7 @@
             // 
             // pnlErrorDownload
             // 
-            this.pnlErrorDownload.Controls.Add(this.btnTryAgainDownload);
+            this.pnlErrorDownload.Controls.Add(this.btnTryAgainProgress);
             this.pnlErrorDownload.Controls.Add(this.lblDownloadError);
             this.pnlErrorDownload.Location = new System.Drawing.Point(15, 153);
             this.pnlErrorDownload.Name = "pnlErrorDownload";
@@ -830,14 +839,14 @@
             this.pnlErrorDownload.TabIndex = 5;
             this.pnlErrorDownload.Visible = false;
             // 
-            // btnTryAgainDownload
+            // btnTryAgainProgress
             // 
-            this.btnTryAgainDownload.Location = new System.Drawing.Point(480, 4);
-            this.btnTryAgainDownload.Name = "btnTryAgainDownload";
-            this.btnTryAgainDownload.Size = new System.Drawing.Size(96, 39);
-            this.btnTryAgainDownload.TabIndex = 5;
-            this.btnTryAgainDownload.Text = "Try Again";
-            this.btnTryAgainDownload.UseVisualStyleBackColor = true;
+            this.btnTryAgainProgress.Location = new System.Drawing.Point(480, 4);
+            this.btnTryAgainProgress.Name = "btnTryAgainProgress";
+            this.btnTryAgainProgress.Size = new System.Drawing.Size(96, 39);
+            this.btnTryAgainProgress.TabIndex = 5;
+            this.btnTryAgainProgress.Text = "Try Again";
+            this.btnTryAgainProgress.UseVisualStyleBackColor = true;
             // 
             // lblDownloadError
             // 
@@ -915,6 +924,52 @@
             this.lblHeader6.Tag = "header";
             this.lblHeader6.Text = "Done!";
             // 
+            // messagePage
+            // 
+            this.messagePage.BackColor = System.Drawing.SystemColors.Control;
+            this.messagePage.Controls.Add(this.btnMessagePageTryAgain);
+            this.messagePage.Controls.Add(this.lblMessagePageText);
+            this.messagePage.Controls.Add(this.lblMessagePageHeader);
+            this.messagePage.Location = new System.Drawing.Point(4, 46);
+            this.messagePage.Name = "messagePage";
+            this.messagePage.Padding = new System.Windows.Forms.Padding(3);
+            this.messagePage.Size = new System.Drawing.Size(611, 380);
+            this.messagePage.TabIndex = 10;
+            this.messagePage.Text = "messagePage";
+            // 
+            // btnMessagePageTryAgain
+            // 
+            this.btnMessagePageTryAgain.Location = new System.Drawing.Point(503, 69);
+            this.btnMessagePageTryAgain.Name = "btnMessagePageTryAgain";
+            this.btnMessagePageTryAgain.Size = new System.Drawing.Size(96, 39);
+            this.btnMessagePageTryAgain.TabIndex = 6;
+            this.btnMessagePageTryAgain.Text = "Try Again";
+            this.btnMessagePageTryAgain.UseVisualStyleBackColor = true;
+            this.btnMessagePageTryAgain.Visible = false;
+            // 
+            // lblMessagePageText
+            // 
+            this.lblMessagePageText.Location = new System.Drawing.Point(12, 69);
+            this.lblMessagePageText.Name = "lblMessagePageText";
+            this.lblMessagePageText.Size = new System.Drawing.Size(485, 202);
+            this.lblMessagePageText.TabIndex = 4;
+            this.lblMessagePageText.Text = "label16";
+            // 
+            // lblMessagePageHeader
+            // 
+            this.lblMessagePageHeader.AutoSize = true;
+            this.lblMessagePageHeader.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMessagePageHeader.Location = new System.Drawing.Point(9, 16);
+            this.lblMessagePageHeader.Name = "lblMessagePageHeader";
+            this.lblMessagePageHeader.Size = new System.Drawing.Size(74, 31);
+            this.lblMessagePageHeader.TabIndex = 3;
+            this.lblMessagePageHeader.Tag = "header";
+            this.lblMessagePageHeader.Text = "Error";
+            // 
+            // openKeystore
+            // 
+            this.openKeystore.DefaultExt = "json";
+            // 
             // WizardFormDesign
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -952,6 +1007,8 @@
             this.pnlErrorDownload.ResumeLayout(false);
             this.step6fin.ResumeLayout(false);
             this.step6fin.PerformLayout();
+            this.messagePage.ResumeLayout(false);
+            this.messagePage.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1028,8 +1085,13 @@
         public System.Windows.Forms.SaveFileDialog saveNewKey;
         public System.Windows.Forms.Label lblDownloadError;
         public System.Windows.Forms.Panel pnlErrorDownload;
-        public System.Windows.Forms.Button btnTryAgainDownload;
+        public System.Windows.Forms.Button btnTryAgainProgress;
         public System.Windows.Forms.ProgressBar loader;
+        public System.Windows.Forms.TabPage messagePage;
+        public System.Windows.Forms.Button btnMessagePageTryAgain;
+        public System.Windows.Forms.Label lblMessagePageText;
+        public System.Windows.Forms.Label lblMessagePageHeader;
+        public System.Windows.Forms.SaveFileDialog openKeystore;
     }
 }
 

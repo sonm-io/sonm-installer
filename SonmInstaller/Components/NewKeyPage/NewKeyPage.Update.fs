@@ -8,7 +8,6 @@ open SonmInstaller.Components.NewKeyPage
 module NewKeyPage = 
 
     type IService = 
-        abstract member GenerateKeyStore: password: string -> Async<unit>
         abstract member DefaultNewKeyPath: string
 
     let init (srv: IService) = 
@@ -17,8 +16,6 @@ module NewKeyPage =
             PasswordRepeat = ""
             ErrorMessage = None 
             KeyPath = srv.DefaultNewKeyPath
-            IsPending = false
-            KeyJustCreated = false
         }
 
     module private Private =
@@ -32,25 +29,17 @@ module NewKeyPage =
                 elif p1 <> p2 then
                     Some "Passwords didn't match"
                 else
-                    None            
+                    None
             validate state.Password state.PasswordRepeat
 
-    let update (service: IService) (state: NewKeyPage.State) = function
+    let update (state: NewKeyPage.State) = function
         | PasswordUpdate p ->
-            { state with Password = p; ErrorMessage = None }, Cmd.none
+            { state with Password = p; ErrorMessage = None }
         | PasswordRepeatUpdate p -> 
-            { state with PasswordRepeat = p; ErrorMessage = None }, Cmd.none
-        | ChangeKeyPath path -> { state with KeyPath = path }, Cmd.none
-        | TryCreateKey -> 
+            { state with PasswordRepeat = p; ErrorMessage = None }
+        | ChangeKeyPath path -> { state with KeyPath = path }
+        | Validate -> 
             let errorMsg = Private.validateState state
             match errorMsg with
-            | Some _ -> { state with ErrorMessage = errorMsg }, Cmd.none
-            | None -> 
-                let cmd = Cmd.ofAsync
-                            service.GenerateKeyStore 
-                            state.Password
-                            (fun () -> FinishCreateKey None)
-                            (fun e -> e |> Some |> FinishCreateKey)
-                { state with ErrorMessage = None; IsPending = true }, cmd
-        | FinishCreateKey _ -> { state with IsPending = false; KeyJustCreated = true }, Cmd.none
-        | ResetResult -> { state with KeyJustCreated = false }, Cmd.none
+            | Some _ -> { state with ErrorMessage = errorMsg }
+            | None -> state

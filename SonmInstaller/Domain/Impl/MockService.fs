@@ -2,21 +2,40 @@
 
 open System
 open System.Threading
+open System.Diagnostics
 
 module private Impl =
 
-    let consoleWrite header message = Console.WriteLine ("{0}: {1}", header, message)
+    let debugWrite header message = Debug.WriteLine ("{0}: {1}", header, message)
 
-    let startDownload (progressCb: int64 -> int64 -> unit) (completeCb: Result<unit, exn> -> unit) =
-        let time = 10L * 1000L // ms
+    let waitReturn ms msg res = async {
+        printfn "%s: Begin" msg
+        do! Async.Sleep ms
+        printfn "%s: End" msg
+        return res
+    }
+
+    let immidiatelyDownload 
+        (progressCb: int64 -> int64 -> unit) 
+        (completeCb: Result<unit, exn> -> unit) =
+        printfn "Downloading progress"
+        progressCb 1L 1L
+        printfn "Downloading complete"
+        completeCb (Ok ())
+
+    let startDownload 
+        time         // ms
+        totalBytes
+        (progressCb: int64 -> int64 -> unit) 
+        (completeCb: Result<unit, exn> -> unit) =
+        
         let deltaTime = 100  // ms
-        let total = 1000L
-        let batch = total / (time / int64(deltaTime))
+        let batch = totalBytes / (time / int64(deltaTime))
 
         let rec loop progress =
             Thread.Sleep deltaTime
-            progressCb progress total
-            if progress < total then
+            progressCb progress totalBytes
+            if progress < totalBytes then
                 loop (progress + batch)
             else 
                 completeCb (Ok ())
@@ -27,14 +46,21 @@ module private Impl =
         
         Console.WriteLine("StartDownload")
 
-    let generateKeyStore password = async {
-        do! Async.Sleep 4000
+let createEmptyService asyncTasksWait = 
+    let address = "0x689c56aef474df92d44a1b70850f808488f9769c"
+    let ms = asyncTasksWait
+    let wait = Impl.waitReturn
+    {
+        generateKeyStore  = (fun _   -> wait ms "generateKeyStore" address)
+        startDownload     = Impl.immidiatelyDownload
+        importKeyStore    = (fun _   -> wait ms "importKeyStore" address)
+        openKeyFolder     = Impl.debugWrite "openKeyFolder"
+        openKeyFile       = Impl.debugWrite "openKeyFile"
+        callSmartContract = (fun _ _ -> wait ms "callSmartContract" ())
+        makeUsbStick   = (fun _   -> wait ms "writeToUsbStick" ())
     }
 
-let service = {
-    startDownload = Impl.startDownload
-    generateKeyStore = Impl.generateKeyStore
-    openKeyFolder = Impl.consoleWrite "openKeyFolder"
-    openKeyFile = Impl.consoleWrite "openKeyFolder"
-}
-
+let createService asyncTasksTime downloadTime  = 
+    { createEmptyService asyncTasksTime with
+        startDownload = Impl.startDownload downloadTime (600L * 1024L * 1024L)
+    }

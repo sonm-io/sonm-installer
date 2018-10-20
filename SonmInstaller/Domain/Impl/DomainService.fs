@@ -32,9 +32,9 @@ type DomainService () =
     do  
         ensureAppPathExists () 
 
-    member __.GetService () = {
-        startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
-        generateKeyStore = Mock.service.generateKeyStore
-        openKeyFolder = startProc
-        openKeyFile = openKeyFile
-    }
+    member __.GetService () = 
+        { Mock.createEmptyService 3000 with
+            startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
+            openKeyFolder = startProc
+            openKeyFile = openKeyFile
+        }
