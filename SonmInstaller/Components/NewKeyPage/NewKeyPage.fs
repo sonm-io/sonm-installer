@@ -1,7 +1,5 @@
 ﻿namespace SonmInstaller.Components.NewKeyPage
 
-
-
 type State = {
     Password: string
     PasswordRepeat: string

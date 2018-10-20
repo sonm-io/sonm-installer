@@ -33,6 +33,11 @@ type ExistingKeystore = {
     password: string
 }
 
+type Withdraw = {
+    withdrawAddress: string
+    thresholdPayout: string
+}
+
 type Show = ShowStep | ShowMessagePage of MessagePage
 
 type State = {
@@ -48,6 +53,7 @@ type State = {
     newKeyState: NewKeyPage.State
     existingKeystore: ExistingKeystore
     etherAddress: string option
+    withdraw: Withdraw
     selectedDrive: ListItem option
 }
 with
@@ -84,10 +90,13 @@ type ImportKey =
     | ChangePassword of string
     | Import of AsyncTask<string>
 
+type WithdrawMsg = 
+    | Address of string
+    | Threshold of string
+
 type Msg =
     | BackBtn
     | NextBtn
-    | GoTo of Step
     | Download of Download
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
@@ -95,6 +104,7 @@ type Msg =
     | OpenKeyDir
     | OpenKeyFile
     | ImportKey of ImportKey
+    | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
     | SelectDrive of ListItem
     | MakeUsbStick of AsyncTask<unit>

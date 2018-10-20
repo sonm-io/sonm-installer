@@ -21,15 +21,22 @@ let ensureAppPathExists () =
         
 let defaultNewKeyPath = Path.Combine(appPath, "key.json")
 
-let generateNewKey password = sprintf "new key content with password: %s" password
-
 let saveTextFile path content =
     File.WriteAllText(path, content)
 
-let getDrives () = 
+let getDrives () = // ToDo
     [
         1, "C:"
         2, "D:"
         3, "E:"
     ]
     |> List.map (fun (value, text) -> new ListItem (value, text))
+
+module Exn = 
+    let getMessagesStack (e: exn) = 
+        let rec loop (res: string) (e: exn) = 
+            if e <> null && not <| String.IsNullOrEmpty e.Message then
+                let msg = e.Message.Trim().TrimEnd('.')
+                loop (sprintf "%s. %s" res msg) e.InnerException
+            else res
+        loop "" e

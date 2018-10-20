@@ -70,7 +70,17 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     //#endregion
 
     //#region step3 Where to send money?
-    //
+    this.tbAddressToSend.TextChanged.Add <| fun _ -> 
+        this.tbAddressToSend.Text
+        |> WithdrawMsg.Address
+        |> Msg.Withdraw
+        |> d
+    
+    this.tbThresholdAmount.TextChanged.Add <| fun _ -> 
+        this.tbThresholdAmount.Text
+        |> WithdrawMsg.Address
+        |> Msg.Withdraw
+        |> d
     //#endregion
 
     //#region step4 Select disk to write to

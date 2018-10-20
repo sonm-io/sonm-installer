@@ -2,6 +2,7 @@
 module SonmInstaller.Components.MainView
 
 open SonmInstaller
+open SonmInstaller.Tools
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
 open SonmInstaller.Components.Main.Msg
@@ -51,11 +52,7 @@ module Main =
                 let text = "Download Error"
                 form.progressBar.LabelTpl       <- text
                 form.progressBarBottom.LabelTpl <- text
-                let msg = 
-                    sprintf "%s. %s"
-                        e.Message
-                        (if e.InnerException <> null then e.InnerException.Message else "")
-                form.lblDownloadError.Text <- msg
+                form.lblDownloadError.Text <- Exn.getMessagesStack e
                 form.lblDownloadError.Visible <- true
 
         let updateStepNum (form: WizardForm) current total =

@@ -2,7 +2,7 @@
 module SonmInstaller.Components.MainUpdate
 
 open Elmish
-open SonmInstaller
+open SonmInstaller.Tools
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
 open SonmInstaller.Components.Main.Msg
@@ -38,6 +38,10 @@ module Main =
             }
             isPending = false
             etherAddress = None
+            withdraw = {
+                withdrawAddress = ""
+                thresholdPayout = ""
+            }
             selectedDrive = None
         }, []
 
@@ -99,14 +103,14 @@ module Main =
                 | Screen.S6Finish          -> failwith "Can't move next from here"
                 | _                        -> failwith "Unknown case"
     
-            let withHistory (s: State) = function
-                | Some step -> goToStep s step
-                | _ -> s
-
             userTriesToGetNextState state
             |> fun (s, cmd, scr) -> 
-                let step = scr |> Option.map (fun scr -> scr, (s.CurrentStepNum() + 1))
-                withHistory s step, cmd
+                scr 
+                |> Option.map (fun scr -> scr, (s.CurrentStepNum() + 1))
+                |> function
+                    | Some step -> goToStep s step
+                    | _ -> s
+                , cmd
             
         let withButtons (state: State, cmd: Cmd<Msg>) =
             let getBackBtn (state: State) = 
@@ -153,20 +157,17 @@ module Main =
                 tryAgainVisible = tryAgainVisible
             }
         
-        let getAsyncCmd (serviceMethod: string -> Async<string>) arg mapResult = 
+        let getAsyncCmd (serviceMethod: 'arg -> Async<'res>) arg mapResult = 
             Cmd.ofAsync
                 serviceMethod 
                 arg
-                (fun address -> address |> Ok |> mapResult)
-                (fun e -> e |> Error          |> mapResult)
+                (fun res -> res |> Ok |> mapResult)
+                (fun e -> e |> Error  |> mapResult)
 
         let keyCreationComplete (s: Main.State) successScreen errorHeader res =
             let keyCreationSuccess (s: Main.State) address nextScreen = 
-                let next d =
-                    let step = nextScreen, (s.CurrentStepNum() + 1)
-                    step |> Msg.GoTo |> d
-                let cmd = Cmd.ofSub next
-                { s with etherAddress = Some address; isPending = false }, cmd
+                let step = nextScreen, (s.CurrentStepNum() + 1)
+                { goToStep s step with etherAddress = Some address; isPending = false }, Cmd.none
             let keyCreationFail (s: Main.State) (e: exn) header = 
                 let showMessage = ShowMessagePage <| getMessagePage header e.Message false
                 { s with show = showMessage; isPending = false }, Cmd.none
@@ -184,7 +185,6 @@ module Main =
                     }, Cmd.none
                 | ShowMessagePage _ -> { s with show = ShowStep }, Cmd.none
             | NextBtn -> nextBtn srv s
-            | GoTo step -> goToStep s step, Cmd.none
             | Download act -> 
                 match act with
                 | Download.Start -> 
@@ -225,8 +225,41 @@ module Main =
                         let cmd = getAsyncCmd srv.ImportKeyStore s.existingKeystore.password mapResult
                         { s with isPending = true }, cmd
                     | AsyncTask.Complete res -> keyCreationComplete s Screen.S3MoneyOut "Key Store Import Error:" res
-            | CallSmartContract _
-            | MakeUsbStick _ -> s, Cmd.none
+            | Withdraw msg -> 
+                match msg with
+                | Address addr -> { s with withdraw = { s.withdraw with withdrawAddress = addr }}, Cmd.none
+                | Threshold value -> { s with withdraw = { s.withdraw with thresholdPayout = value }}, Cmd.none
+            | CallSmartContract task ->
+                match task with
+                | Start -> 
+                    let cmd = 
+                        getAsyncCmd
+                            (srv.CallSmartContract s.withdraw.withdrawAddress)
+                            (float s.withdraw.thresholdPayout)
+                            (AsyncTask.Complete >> CallSmartContract)
+                    s, cmd
+                | Complete res -> 
+                    match res with
+                    | Ok () -> goToStep s (Screen.S4SelectDisk, (s.CurrentStepNum() + 1)), Cmd.none
+                    | Error e -> 
+                        let msgPage = getMessagePage "Call Smart Contract Failed" (Exn.getMessagesStack e) false
+                        { s with show = ShowMessagePage msgPage }, Cmd.none
+            | SelectDrive drive -> { s with selectedDrive = Some drive }, Cmd.none 
+            | MakeUsbStick task -> 
+                match task with
+                | Start -> 
+                    let cmd = 
+                        getAsyncCmd
+                            srv.MakeUsbStick
+                            (s.selectedDrive.Value.Value)
+                            (AsyncTask.Complete >> MakeUsbStick)
+                    s, cmd
+                | Complete res -> 
+                    match res with
+                    | Ok () -> goToStep s (Screen.S6Finish, (s.CurrentStepNum() + 1)), Cmd.none
+                    | Error e -> 
+                        let msgPage = getMessagePage "Error" (Exn.getMessagesStack e) false
+                        { s with show = ShowMessagePage msgPage }, Cmd.none
         
     open Impl
 
