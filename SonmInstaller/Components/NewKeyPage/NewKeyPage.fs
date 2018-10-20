@@ -1,15 +1,15 @@
 ﻿namespace SonmInstaller.Components.NewKeyPage
 
 type State = {
-    Password: string
-    PasswordRepeat: string
-    ErrorMessage: string option
-    KeyPath: string
+    password: string
+    passwordRepeat: string
+    errorMessage: string option
+    keyPath: string
 }
 with
     member this.NextAllowed () = 
-        (this.Password <> "" || this.PasswordRepeat <> "")
-        && Option.isNone this.ErrorMessage
+        (this.password <> "" || this.passwordRepeat <> "")
+        && Option.isNone this.errorMessage
 
 type Msg =
     | PasswordUpdate of string

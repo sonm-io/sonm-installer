@@ -12,10 +12,10 @@ module NewKeyPage =
 
     let init (srv: IService) = 
         { 
-            Password = ""
-            PasswordRepeat = ""
-            ErrorMessage = None 
-            KeyPath = srv.DefaultNewKeyPath
+            password = ""
+            passwordRepeat = ""
+            errorMessage = None 
+            keyPath = srv.DefaultNewKeyPath
         }
 
     module private Private =
@@ -30,16 +30,16 @@ module NewKeyPage =
                     Some "Passwords didn't match"
                 else
                     None
-            validate state.Password state.PasswordRepeat
+            validate state.password state.passwordRepeat
 
     let update (state: NewKeyPage.State) = function
         | PasswordUpdate p ->
-            { state with Password = p; ErrorMessage = None }
+            { state with password = p; errorMessage = None }
         | PasswordRepeatUpdate p -> 
-            { state with PasswordRepeat = p; ErrorMessage = None }
-        | ChangeKeyPath path -> { state with KeyPath = path }
+            { state with passwordRepeat = p; errorMessage = None }
+        | ChangeKeyPath path -> { state with keyPath = path }
         | Validate -> 
             let errorMsg = Private.validateState state
             match errorMsg with
-            | Some _ -> { state with ErrorMessage = errorMsg }
+            | Some _ -> { state with errorMessage = errorMsg }
             | None -> state

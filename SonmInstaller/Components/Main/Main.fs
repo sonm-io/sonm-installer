@@ -34,7 +34,7 @@ type ExistingKeystore = {
 }
 
 type Withdraw = {
-    withdrawAddress: string
+    address: string
     thresholdPayout: string
 }
 

@@ -7,7 +7,7 @@ open SonmInstaller.Components
 module NewKeyPage =
     let view (form: WizardForm) (state: NewKeyPage.State) =
         form.lblNewKeyErrorMessage.Text <- 
-            match state.ErrorMessage with
+            match state.errorMessage with
             | Some err -> err
             | None -> ""
-        form.lblNewKeyErrorMessage.Visible <- Option.isSome state.ErrorMessage
+        form.lblNewKeyErrorMessage.Visible <- Option.isSome state.errorMessage

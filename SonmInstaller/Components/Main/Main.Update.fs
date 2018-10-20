@@ -39,7 +39,7 @@ module Main =
             isPending = false
             etherAddress = None
             withdraw = {
-                withdrawAddress = ""
+                address = ""
                 thresholdPayout = ""
             }
             selectedDrive = None
@@ -201,14 +201,14 @@ module Main =
                 match action with
                 | AsyncTask.Start -> 
                     let mapResult = AsyncTask.Complete >> GenerateKey
-                    let cmd = getAsyncCmd srv.GenerateKeyStore s.newKeyState.Password mapResult
+                    let cmd = getAsyncCmd srv.GenerateKeyStore s.newKeyState.password mapResult
                     { s with isPending = true }, cmd
                 | AsyncTask.Complete res -> keyCreationComplete s Screen.S2a2KeyGenSuccess "Key Store Generation Error:" res
             | OpenKeyDir -> 
-                srv.OpenKeyFolder s.newKeyState.KeyPath
+                srv.OpenKeyFolder s.newKeyState.keyPath
                 s, Cmd.none
             | OpenKeyFile -> 
-                srv.OpenKeyFile s.newKeyState.KeyPath
+                srv.OpenKeyFile s.newKeyState.keyPath
                 s, Cmd.none
             | ImportKey act -> 
                 match act with
@@ -227,14 +227,14 @@ module Main =
                     | AsyncTask.Complete res -> keyCreationComplete s Screen.S3MoneyOut "Key Store Import Error:" res
             | Withdraw msg -> 
                 match msg with
-                | Address addr -> { s with withdraw = { s.withdraw with withdrawAddress = addr }}, Cmd.none
+                | Address addr -> { s with withdraw = { s.withdraw with address = addr }}, Cmd.none
                 | Threshold value -> { s with withdraw = { s.withdraw with thresholdPayout = value }}, Cmd.none
             | CallSmartContract task ->
                 match task with
                 | Start -> 
                     let cmd = 
                         getAsyncCmd
-                            (srv.CallSmartContract s.withdraw.withdrawAddress)
+                            (srv.CallSmartContract s.withdraw.address)
                             (float s.withdraw.thresholdPayout)
                             (AsyncTask.Complete >> CallSmartContract)
                     s, cmd

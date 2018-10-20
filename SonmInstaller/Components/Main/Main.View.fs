@@ -66,7 +66,7 @@ module Main =
             doIf (fun s -> s.backButton) (Button.view form.btnBack)
             doIf (fun s -> s.nextButton) (Button.view form.btnNext)
     
-            doPropIf (fun s -> s.newKeyState.KeyPath) (fun keyPath -> 
+            doPropIf (fun s -> s.newKeyState.keyPath) (fun keyPath -> 
                 form.lblNewKeyPath.Text          <- keyPath
                 form.saveNewKey.InitialDirectory <- Path.GetDirectoryName keyPath
                 form.saveNewKey.FileName         <- Path.GetFileName      keyPath
