@@ -31,10 +31,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardFormDesign));
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnBack = new System.Windows.Forms.Button();
+            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
             this.btnNext = new System.Windows.Forms.Button();
             this.saveNewKey = new System.Windows.Forms.SaveFileDialog();
             this.loader = new System.Windows.Forms.ProgressBar();
-            this.progressBarBottom = new SonmInstaller.UI.ProgressBar();
             this.tabs = new SonmInstaller.WizardPages();
             this.step0 = new System.Windows.Forms.TabPage();
             this.linkWelcome = new System.Windows.Forms.LinkLabel();
@@ -148,6 +148,17 @@
             this.btnBack.Text = "Back";
             this.btnBack.UseVisualStyleBackColor = true;
             // 
+            // progressBarBottom
+            // 
+            this.progressBarBottom.LabelTpl = "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)";
+            this.progressBarBottom.Location = new System.Drawing.Point(11, 15);
+            this.progressBarBottom.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.progressBarBottom.Name = "progressBarBottom";
+            this.progressBarBottom.ProgressCurrent = 0D;
+            this.progressBarBottom.ProgressTotal = 100D;
+            this.progressBarBottom.Size = new System.Drawing.Size(375, 50);
+            this.progressBarBottom.TabIndex = 1;
+            // 
             // btnNext
             // 
             this.btnNext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -169,17 +180,6 @@
             this.loader.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.loader.TabIndex = 6;
             this.loader.Visible = false;
-            // 
-            // progressBarBottom
-            // 
-            this.progressBarBottom.LabelTpl = "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)";
-            this.progressBarBottom.Location = new System.Drawing.Point(11, 15);
-            this.progressBarBottom.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.progressBarBottom.Name = "progressBarBottom";
-            this.progressBarBottom.ProgressCurrent = 0D;
-            this.progressBarBottom.ProgressTotal = 100D;
-            this.progressBarBottom.Size = new System.Drawing.Size(375, 50);
-            this.progressBarBottom.TabIndex = 1;
             // 
             // tabs
             // 
@@ -739,7 +739,6 @@
             this.tbThresholdAmount.Name = "tbThresholdAmount";
             this.tbThresholdAmount.Size = new System.Drawing.Size(385, 22);
             this.tbThresholdAmount.TabIndex = 2;
-            this.tbThresholdAmount.Text = "1000";
             // 
             // tbAddressToSend
             // 

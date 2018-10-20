@@ -40,7 +40,7 @@ module Main =
             etherAddress = None
             withdraw = {
                 address = ""
-                thresholdPayout = ""
+                thresholdPayout = "1000"
             }
             selectedDrive = None
         }, []
@@ -62,6 +62,10 @@ module Main =
                     currentStep = step 
                     stepsHistory = s.currentStep::s.stepsHistory
             }
+
+        let startAsync (s: Main.State) (msg: AsyncTask<'res> -> Msg) =
+            let cmd = Cmd.ofSub (fun d -> AsyncTask.Start |> msg |> d)
+            s, cmd, None
 
         let nextBtn (service: IService) (state: Main.State) = 
 
@@ -87,18 +91,13 @@ module Main =
                     let keyGenState = NewKeyPage.update s.newKeyState NewKeyPage.Msg.Validate
                     let ns = { s with newKeyState = keyGenState }
                     match keyGenState.NextAllowed() with
-                    | true  -> 
-                        let tryCreateKey = Cmd.ofSub (fun d -> AsyncTask.Start |> GenerateKey |> d)
-                        ns, tryCreateKey, None
+                    | true  -> startAsync ns GenerateKey
                     | false -> ns, Cmd.none, None
                 | Screen.S2a2KeyGenSuccess -> goTo Screen.S3MoneyOut
                 | Screen.S2b1SelectJson    -> goTo Screen.S2b2JsonPassword
                 | Screen.S2b2JsonPassword  -> goTo Screen.S3MoneyOut
-                | Screen.S3MoneyOut        -> 
-                    let callSC = Cmd.ofSub (fun d -> AsyncTask.Start |> CallSmartContract |> d)
-                    s, callSC, None
-                | Screen.S4SelectDisk      -> 
-                    goTo Screen.S5Progress
+                | Screen.S3MoneyOut        -> startAsync s CallSmartContract
+                | Screen.S4SelectDisk      -> startAsync s MakeUsbStick
                 | Screen.S5Progress
                 | Screen.S6Finish          -> failwith "Can't move next from here"
                 | _                        -> failwith "Unknown case"
@@ -126,15 +125,12 @@ module Main =
 
             let getNextBtn (s: State) = 
                 let isNextAllowedOnScreen = function
-                    | Screen.S2a1KeyGen -> s.newKeyState.NextAllowed()
+                    | Screen.S2a1KeyGen   -> s.newKeyState.NextAllowed()
+                    | Screen.S4SelectDisk -> s.selectedDrive.IsSome
                     | _ -> true
                 let b = match s.CurrentScreen () with
                         | Screen.S0Welcome    -> button.btnBegin
                         | Screen.S6Finish     -> button.btnClose
-                        | Screen.S4SelectDisk -> 
-                            match s.selectedDrive with
-                            | Some _ -> button.btnNext
-                            | None   -> button.btnHidden
                         | Screen.S5Progress   -> button.btnHidden
                         | _                   -> button.btnNext
                 { b with 
@@ -163,6 +159,20 @@ module Main =
                 arg
                 (fun res -> res |> Ok |> mapResult)
                 (fun e -> e |> Error  |> mapResult)
+
+        let getPending (s: State) (serviceMethod: 'arg -> Async<'res>) arg mapResult = 
+            let cmd = getAsyncCmd serviceMethod arg mapResult
+            { s with isPending = true }, cmd
+
+        let processAsyncTask (s: State) (serviceMethod: 'arg -> Async<'res>) arg mapResult successScreen errorHeader = function
+            | Start -> 
+                getPending s serviceMethod arg mapResult
+            | Complete res -> 
+                match res with
+                | Ok () (*ToDo arg*) -> goToStep { s with isPending = false } (successScreen, (s.CurrentStepNum() + 1)), Cmd.none
+                | Error e -> 
+                    let msgPage = getMessagePage errorHeader (Exn.getMessagesStack e) false
+                    { s with show = ShowMessagePage msgPage; isPending = false }, Cmd.none
 
         let keyCreationComplete (s: Main.State) successScreen errorHeader res =
             let keyCreationSuccess (s: Main.State) address nextScreen = 
@@ -230,36 +240,23 @@ module Main =
                 | Address addr -> { s with withdraw = { s.withdraw with address = addr }}, Cmd.none
                 | Threshold value -> { s with withdraw = { s.withdraw with thresholdPayout = value }}, Cmd.none
             | CallSmartContract task ->
-                match task with
-                | Start -> 
-                    let cmd = 
-                        getAsyncCmd
-                            (srv.CallSmartContract s.withdraw.address)
-                            (float s.withdraw.thresholdPayout)
-                            (AsyncTask.Complete >> CallSmartContract)
-                    s, cmd
-                | Complete res -> 
-                    match res with
-                    | Ok () -> goToStep s (Screen.S4SelectDisk, (s.CurrentStepNum() + 1)), Cmd.none
-                    | Error e -> 
-                        let msgPage = getMessagePage "Call Smart Contract Failed" (Exn.getMessagesStack e) false
-                        { s with show = ShowMessagePage msgPage }, Cmd.none
+                processAsyncTask s
+                    (srv.CallSmartContract s.withdraw.address)
+                    (float s.withdraw.thresholdPayout)
+                    (AsyncTask.Complete >> CallSmartContract)
+                    Screen.S4SelectDisk
+                    "Call Smart Contract Failed"
+                    task
             | SelectDrive drive -> { s with selectedDrive = Some drive }, Cmd.none 
             | MakeUsbStick task -> 
-                match task with
-                | Start -> 
-                    let cmd = 
-                        getAsyncCmd
-                            srv.MakeUsbStick
-                            (s.selectedDrive.Value.Value)
-                            (AsyncTask.Complete >> MakeUsbStick)
-                    s, cmd
-                | Complete res -> 
-                    match res with
-                    | Ok () -> goToStep s (Screen.S6Finish, (s.CurrentStepNum() + 1)), Cmd.none
-                    | Error e -> 
-                        let msgPage = getMessagePage "Error" (Exn.getMessagesStack e) false
-                        { s with show = ShowMessagePage msgPage }, Cmd.none
+                processAsyncTask s
+                    srv.MakeUsbStick
+                    s.selectedDrive.Value.Value
+                    (AsyncTask.Complete >> MakeUsbStick)
+                    Screen.S6Finish
+                    "Error"
+                    task
+
         
     open Impl
 

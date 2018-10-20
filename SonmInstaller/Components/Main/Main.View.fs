@@ -36,6 +36,7 @@ module Main =
         let view (form: WizardForm) (state: Main.State) = 
             DownloadProgressBar.reset form
             addDrives form
+            form.tbThresholdAmount.Text <- state.withdraw.thresholdPayout
         
 
     module private Common =

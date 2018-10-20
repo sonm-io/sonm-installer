@@ -5,6 +5,7 @@ open System.Windows.Forms
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
 open SonmInstaller.Components.Main.Msg
+open SonmInstaller.Tools
 
 let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) = 
     this.Load.Add <| fun _ ->
@@ -84,7 +85,11 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     //#endregion
 
     //#region step4 Select disk to write to
-    this.cmbDisk.SelectedValueChanged.Add <| fun _ -> ()
+    this.cmbDisk.SelectedValueChanged.Add <| fun _ -> 
+        this.cmbDisk.SelectedItem
+        |> (fun i -> i :?> ListItem)
+        |> SelectDrive
+        |> d
     //#endregion
 
     //#region step5progress Preparing installation image

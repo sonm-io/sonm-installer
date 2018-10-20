@@ -4,8 +4,6 @@ open Elmish
 open Elmish.Winforms
 open SonmInstaller.EventHandlers
 open SonmInstaller.Components
-open SonmInstaller.EventHandlers
-open System.Linq.Expressions
 open SonmInstaller.Domain
 
 module private Impl =  
