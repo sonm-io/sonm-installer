@@ -66,16 +66,16 @@ module Main =
             let doIf = doIfChanged prev next
             let inline doPropIf p a = doPropIfChanged prev next p a
     
-            doIf (fun s -> s.BackButton) (Button.view form.btnBack)
-            doIf (fun s -> s.NextButton) (Button.view form.btnNext)
+            doIf (fun s -> s.backButton) (Button.view form.btnBack)
+            doIf (fun s -> s.nextButton) (Button.view form.btnNext)
     
-            doPropIf (fun s -> s.NewKeyState.KeyPath) (fun keyPath -> 
+            doPropIf (fun s -> s.newKeyState.KeyPath) (fun keyPath -> 
                 form.lblNewKeyPath.Text          <- keyPath
                 form.saveNewKey.InitialDirectory <- Path.GetDirectoryName keyPath
                 form.saveNewKey.FileName         <- Path.GetFileName      keyPath
             )
 
-            doPropIf (fun s -> s.InstallationProgress) (function 
+            doPropIf (fun s -> s.installationProgress) (function 
                 | InstallationProgress.DownloadComplete result -> downloadComplete form result
                 | Downloading -> 
                     DownloadProgressBar.reset form
@@ -83,18 +83,18 @@ module Main =
                 | _ -> ()
             )
 
-            doPropIf (fun s -> s.EtherAddress) (function 
+            doPropIf (fun s -> s.etherAddress) (function 
                 | Some addr -> addr
                 | None      -> String.Empty
             >> fun addr  -> form.tbAddressToSend.Text <- addr)
 
-            doPropIf (fun s -> s.IsPending) (fun isPending -> form.loader.Visible <- isPending) 
+            doPropIf (fun s -> s.isPending) (fun isPending -> form.loader.Visible <- isPending) 
 
             form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
             
             updateStepNum form (next.CurrentStepNum()) totalSteps
             
-            NewKeyPage.view form next.NewKeyState
+            NewKeyPage.view form next.newKeyState
             
             form.progressBarBottom.Visible <- 
                 let cs = next.CurrentScreen ()

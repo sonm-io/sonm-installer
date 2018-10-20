@@ -23,9 +23,9 @@ type InstallationProgress =
     | DownloadComplete of Result<unit, exn>
 
 type MessagePage = {
-    Header: string
-    Message: string
-    TryAgainVisible: bool
+    header: string
+    message: string
+    tryAgainVisible: bool
 }
 
 type ExistingKeystore = {
@@ -36,32 +36,32 @@ type ExistingKeystore = {
 type Show = ShowStep | ShowMessagePage of MessagePage
 
 type State = {
-    CurrentStep: Step
-    StepsHistory: Step list
-    Show: Show
-    InstallationProgress: InstallationProgress
-    BackButton: Button.State
-    NextButton: Button.State
-    IsPending: bool
+    currentStep: Step
+    stepsHistory: Step list
+    show: Show
+    installationProgress: InstallationProgress
+    backButton: Button.State
+    nextButton: Button.State
+    isPending: bool
     // progress:
-    HasWallet: bool
-    NewKeyState: NewKeyPage.State
-    ExistingKeystore: ExistingKeystore
-    EtherAddress: string option
-    SelectedDrive: ListItem option
+    hasWallet: bool
+    newKeyState: NewKeyPage.State
+    existingKeystore: ExistingKeystore
+    etherAddress: string option
+    selectedDrive: ListItem option
 }
 with
-    member this.IsAtBeginning () = this.StepsHistory = []
+    member this.IsAtBeginning () = this.stepsHistory = []
     member this.HistoryTail () =
-        match this.StepsHistory with
+        match this.stepsHistory with
         | _::tail -> tail
         | _ -> []
     member this.PrevStep () = 
-        match this.StepsHistory with
+        match this.stepsHistory with
         | head::_ -> head
-        | _ -> this.CurrentStep
-    member this.CurrentScreen () = this.CurrentStep |> fst
-    member this.CurrentStepNum () = this.CurrentStep |> snd
+        | _ -> this.currentStep
+    member this.CurrentScreen () = this.currentStep |> fst
+    member this.CurrentStepNum () = this.currentStep |> snd
 
 
 namespace SonmInstaller.Components.Main.Msg
