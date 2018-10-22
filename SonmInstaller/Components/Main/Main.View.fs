@@ -88,6 +88,11 @@ module Main =
 
             doPropIf (fun s -> s.isPending) (fun isPending -> form.loader.Visible <- isPending) 
 
+            doPropIf (fun s -> s.existingKeystore.path) (
+                Option.defaultValue "" 
+                >> fun path -> form.lblLoadedKeyPath.Text <- path
+            )
+
             form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
             
             updateStepNum form (next.CurrentStepNum()) totalSteps

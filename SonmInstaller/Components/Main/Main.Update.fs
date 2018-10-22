@@ -1,6 +1,6 @@
 ﻿[<AutoOpen>]
 module SonmInstaller.Components.MainUpdate
-
+open System
 open Elmish
 open SonmInstaller.Tools
 open SonmInstaller.Components
@@ -106,7 +106,7 @@ module Main =
                 (mapRes: State * Result<'res,exn> -> State * Cmd<Msg>) 
                 = function
                 | Start -> 
-                    getPending s serviceMethod mapMsg
+                    getPending s serviceMethod (AsyncTask.Complete >> mapMsg)
                 | Complete res -> 
                     mapRes ({ s with isPending = false }, res)
 
@@ -147,7 +147,7 @@ module Main =
                     | false -> ns, Cmd.none, None
                 | Screen.S2a2KeyGenSuccess -> goTo Screen.S3MoneyOut
                 | Screen.S2b1SelectJson    -> goTo Screen.S2b2JsonPassword
-                | Screen.S2b2JsonPassword  -> goTo Screen.S3MoneyOut
+                | Screen.S2b2JsonPassword  -> AsyncHlp.startAsync s (ImportKey.Import >> Msg.ImportKey)
                 | Screen.S3MoneyOut        -> AsyncHlp.startAsync s CallSmartContract
                 | Screen.S4SelectDisk      -> AsyncHlp.startAsync s MakeUsbStick
                 | Screen.S5Progress
@@ -179,8 +179,9 @@ module Main =
 
             let getNextBtn (s: State) = 
                 let isNextAllowedOnScreen = function
-                    | Screen.S2a1KeyGen   -> s.newKeyState.NextAllowed()
-                    | Screen.S4SelectDisk -> s.selectedDrive.IsSome
+                    | Screen.S2a1KeyGen       -> s.newKeyState.NextAllowed()
+                    | Screen.S2b2JsonPassword -> not <| String.IsNullOrEmpty(s.existingKeystore.password)
+                    | Screen.S4SelectDisk     -> s.selectedDrive.IsSome
                     | _ -> true
                 let b = match s.CurrentScreen () with
                         | Screen.S0Welcome    -> button.btnBegin
@@ -226,7 +227,7 @@ module Main =
                 task 
                 |> AsyncHlp.processTask s
                     (fun () -> srv.GenerateKeyStore s.newKeyState.password)
-                    (AsyncTask.Complete >> GenerateKey)
+                    GenerateKey
                     (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr }) 
                     >> AsyncHlp.toScreen Screen.S2a2KeyGenSuccess "Key Store Generation Error:" 
                     >> fun (s, _) -> s, Cmd.none)
@@ -248,7 +249,7 @@ module Main =
                     task 
                     |> AsyncHlp.processTask s
                         (fun () -> srv.ImportKeyStore s.existingKeystore.password)
-                        (AsyncTask.Complete >> ImportKey.Import >> Msg.ImportKey)
+                        (ImportKey.Import >> Msg.ImportKey)
                         (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr })
                         >> AsyncHlp.toScreen Screen.S3MoneyOut "Key Store Import Error:"
                         >> fun (s, _) -> s, Cmd.none)
@@ -260,7 +261,7 @@ module Main =
                 task
                 |> AsyncHlp.processTask s
                     (fun () -> srv.CallSmartContract s.withdraw.address (float s.withdraw.thresholdPayout))
-                    (AsyncTask.Complete >> CallSmartContract)
+                    (CallSmartContract)
                     (AsyncHlp.toScreen Screen.S4SelectDisk "Call Smart Contract Failed"
                     >> fun (s, _) -> s, Cmd.none)
             | SelectDrive drive -> { s with selectedDrive = Some drive }, Cmd.none 
@@ -268,7 +269,7 @@ module Main =
                 task
                 |> AsyncHlp.processTask s
                     (fun () -> srv.MakeUsbStick s.selectedDrive.Value.Value)
-                    (AsyncTask.Complete >> MakeUsbStick)
+                    MakeUsbStick
                     (AsyncHlp.toScreen Screen.S6Finish "Error" 
                     >> fun (s, _) -> s, Cmd.none)
         

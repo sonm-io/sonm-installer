@@ -106,7 +106,7 @@
             this.btnMessagePageTryAgain = new System.Windows.Forms.Button();
             this.lblMessagePageText = new System.Windows.Forms.Label();
             this.lblMessagePageHeader = new System.Windows.Forms.Label();
-            this.openKeystore = new System.Windows.Forms.SaveFileDialog();
+            this.openKeystore = new System.Windows.Forms.OpenFileDialog();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -967,7 +967,8 @@
             // 
             // openKeystore
             // 
-            this.openKeystore.DefaultExt = "json";
+            this.openKeystore.FileName = "openFileDialog1";
+            this.openKeystore.Filter = "Json files|*.json|All files|*.*";
             // 
             // WizardFormDesign
             // 
@@ -1090,7 +1091,7 @@
         public System.Windows.Forms.Button btnMessagePageTryAgain;
         public System.Windows.Forms.Label lblMessagePageText;
         public System.Windows.Forms.Label lblMessagePageHeader;
-        public System.Windows.Forms.SaveFileDialog openKeystore;
+        public System.Windows.Forms.OpenFileDialog openKeystore;
     }
 }
 
