@@ -1,0 +1,2 @@
+﻿module SonmInstaller.Domain.UsbStickMaker
+

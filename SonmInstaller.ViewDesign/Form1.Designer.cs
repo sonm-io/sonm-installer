@@ -793,7 +793,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(12, 223);
+            this.label23.Location = new System.Drawing.Point(12, 207);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(101, 17);
             this.label23.TabIndex = 4;
@@ -803,10 +803,10 @@
             // 
             this.cmbDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbDisk.FormattingEnabled = true;
-            this.cmbDisk.Location = new System.Drawing.Point(12, 246);
+            this.cmbDisk.Location = new System.Drawing.Point(12, 230);
             this.cmbDisk.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cmbDisk.Name = "cmbDisk";
-            this.cmbDisk.Size = new System.Drawing.Size(296, 24);
+            this.cmbDisk.Size = new System.Drawing.Size(587, 24);
             this.cmbDisk.TabIndex = 3;
             // 
             // lblHeader4

@@ -30,7 +30,7 @@ module Main =
     module private Initial =
         
         let addDrives (form: WizardForm) = 
-            Tools.getDrives ()
+            Tools.DiskDrives.getDiskDrives ()
             |> List.iter (fun i -> form.cmbDisk.Items.Add i |> ignore)
 
         let view (form: WizardForm) (state: Main.State) = 

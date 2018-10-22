@@ -63,6 +63,7 @@
     <Compile Include="Domain\Impl\MockService.fs" />
     <Compile Include="Domain\Impl\Download.fs" />
     <Compile Include="Domain\Impl\Blockchain.fs" />
+    <Compile Include="Domain\Impl\UsbStickMaker.fs" />
     <Compile Include="Domain\Impl\DomainService.fs" />
     <Compile Include="EventHandlers.fs" />
     <Compile Include="Program.fs" />
@@ -114,6 +115,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation">
