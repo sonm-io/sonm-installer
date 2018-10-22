@@ -1,8 +1,10 @@
 ﻿module SonmInstaller.Domain.Mock
 
 open System
+open System.IO
 open System.Threading
 open System.Diagnostics
+open SonmInstaller
 
 module private Impl =
 
@@ -51,9 +53,10 @@ let createEmptyService asyncTasksWait =
     let ms = asyncTasksWait
     let wait = Impl.waitReturn
     {
-        generateKeyStore  = (fun _   -> wait ms "generateKeyStore" address)
+        getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
         startDownload     = Impl.immidiatelyDownload
-        importKeyStore    = (fun _   -> wait ms "importKeyStore" address)
+        generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
+        importKeyStore    = (fun _ _ -> wait ms "importKeyStore" address)
         openKeyFolder     = Impl.debugWrite "openKeyFolder"
         openKeyFile       = Impl.debugWrite "openKeyFile"
         callSmartContract = (fun _ _ -> wait ms "callSmartContract" ())

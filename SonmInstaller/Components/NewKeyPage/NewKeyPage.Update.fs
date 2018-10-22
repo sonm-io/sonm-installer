@@ -8,14 +8,14 @@ open SonmInstaller.Components.NewKeyPage
 module NewKeyPage = 
 
     type IService = 
-        abstract member DefaultNewKeyPath: string
+        abstract member GetUtcFilePath: unit -> string
 
     let init (srv: IService) = 
         { 
             password = ""
             passwordRepeat = ""
             errorMessage = None 
-            keyPath = srv.DefaultNewKeyPath
+            keyPath = srv.GetUtcFilePath ()
         }
 
     module private Private =

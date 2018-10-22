@@ -5,13 +5,16 @@ open SonmInstaller.Components
 
 type Service = 
     {
-        // Main
+        // NewKeyPage.IService
+        getUtcFilePath: unit -> string
+        
+        // Main.IService
         startDownload:  
             (int64 -> int64 -> unit) ->     // progressCb: bytesDownloaded -> total
             (Result<unit, exn> -> unit) ->  // completeCb
             unit
-        generateKeyStore: string -> Async<string> // password -> path
-        importKeyStore : string -> Async<string>
+        generateKeyStore: string -> string -> Async<string> // path -> password -> address
+        importKeyStore  : string -> string -> Async<string>
         openKeyFolder: (*path*) string -> unit
         openKeyFile:   (*path*) string -> unit
         callSmartContract: string -> float -> Async<unit>
@@ -19,12 +22,12 @@ type Service =
         closeApp: unit -> unit
     } 
     interface NewKeyPage.IService with
-        member __.DefaultNewKeyPath = Tools.defaultNewKeyPath
+        member x.GetUtcFilePath () = x.getUtcFilePath ()
         
     interface Main.IService with
         member x.StartDownload progressCb completeCb = x.startDownload progressCb completeCb
-        member x.GenerateKeyStore password = x.generateKeyStore password
-        member x.ImportKeyStore password = x.importKeyStore password
+        member x.GenerateKeyStore path password = x.generateKeyStore path password
+        member x.ImportKeyStore   path password = x.importKeyStore path password
         member x.OpenKeyFolder path = x.openKeyFolder path
         member x.OpenKeyFile path = x.openKeyFile path
         member x.CallSmartContract withdrawTo minPayout = x.callSmartContract withdrawTo minPayout

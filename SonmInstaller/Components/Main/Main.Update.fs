@@ -15,8 +15,8 @@ module Main =
             progressCb: (int64 -> int64 -> unit) ->
             completeCb: (Result<unit, exn> -> unit) ->  // ToDo: make it just exn option
             unit
-        abstract member GenerateKeyStore : password: string -> Async<string>
-        abstract member ImportKeyStore   : password: string -> Async<string>
+        abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
+        abstract member ImportKeyStore   : path: string -> password: string -> Async<string>
         abstract member OpenKeyFolder : path: string -> unit
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
@@ -180,6 +180,7 @@ module Main =
             let getNextBtn (s: State) = 
                 let isNextAllowedOnScreen = function
                     | Screen.S2a1KeyGen       -> s.newKeyState.NextAllowed()
+                    | Screen.S2b1SelectJson   -> s.existingKeystore.path.IsSome
                     | Screen.S2b2JsonPassword -> not <| String.IsNullOrEmpty(s.existingKeystore.password)
                     | Screen.S4SelectDisk     -> s.selectedDrive.IsSome
                     | _ -> true
@@ -226,7 +227,7 @@ module Main =
             | GenerateKey task -> 
                 task 
                 |> AsyncHlp.processTask s
-                    (fun () -> srv.GenerateKeyStore s.newKeyState.password)
+                    (fun () -> srv.GenerateKeyStore s.newKeyState.keyPath s.newKeyState.password) // ToDo: make keyPath 'option
                     GenerateKey
                     (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr }) 
                     >> AsyncHlp.toScreen Screen.S2a2KeyGenSuccess "Key Store Generation Error:" 
@@ -248,7 +249,7 @@ module Main =
                 | ImportKey.Import task -> 
                     task 
                     |> AsyncHlp.processTask s
-                        (fun () -> srv.ImportKeyStore s.existingKeystore.password)
+                        (fun () -> srv.ImportKeyStore s.existingKeystore.path.Value s.existingKeystore.password)
                         (ImportKey.Import >> Msg.ImportKey)
                         (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr })
                         >> AsyncHlp.toScreen Screen.S3MoneyOut "Key Store Import Error:"

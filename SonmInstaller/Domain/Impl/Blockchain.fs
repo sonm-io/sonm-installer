@@ -6,17 +6,16 @@ open Nethereum.Signer
 open Nethereum.Util
 open Nethereum.Web3.Accounts
 
-module Impl = 
-    let genAccount () = 
-        let ecKey = EthECKey.GenerateKey()
-        let privateKey = ecKey.GetPrivateKeyAsBytes().ToHex()
-        new Account(privateKey)
+let genAccount () = 
+    let ecKey = EthECKey.GenerateKey()
+    let privateKey = ecKey.GetPrivateKeyAsBytes().ToHex()
+    new Account(privateKey)
 
-open Impl
-
-let generateKeyStore password =
-    let account = genAccount ()
+let getUtcFileName address =
     let service = new KeyStoreService()
-    let fileName = service.GenerateUTCFileName (account.Address)
-    let json = service.EncryptAndGenerateDefaultKeyStoreAsJson(password, account.PrivateKey.HexToByteArray(), account.Address)
-    fileName, json
+    service.GenerateUTCFileName(address)    
+
+let generateKeyStore (account: Account) password =
+    let service = new KeyStoreService()
+    service.EncryptAndGenerateDefaultKeyStoreAsJson(password, account.PrivateKey.HexToByteArray(), account.Address)
+

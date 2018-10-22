@@ -40,6 +40,8 @@ module Main =
         
 
     module private Common =
+        open Main
+
         let totalSteps = 6
 
         let downloadComplete (form: WizardForm) = function
@@ -59,6 +61,17 @@ module Main =
         let updateStepNum (form: WizardForm) current total =
             let label = form.HeaderLabels.[form.tabs.SelectedIndex]
             label.Text <- String.Format(form.HeaderTpls.[form.tabs.SelectedIndex], current, total)
+
+        let showTab (form: WizardForm) (s: Main.State) = 
+            match s.show with
+            | ShowStep -> 
+                form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (s.CurrentScreen ())
+                updateStepNum form (s.CurrentStepNum()) totalSteps
+            | ShowMessagePage page -> 
+                form.tabs.SelectedIndex <- 10
+                form.lblMessagePageHeader.Text <- page.header
+                form.lblMessagePageText.Text <- page.message
+                form.btnMessagePageTryAgain.Visible <- page.tryAgainVisible
 
         let view (form: WizardForm) (prev: Main.State option) (next: Main.State) = 
             let doIf = doIfChanged prev next
@@ -93,10 +106,8 @@ module Main =
                 >> fun path -> form.lblLoadedKeyPath.Text <- path
             )
 
-            form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (next.CurrentScreen ())
-            
-            updateStepNum form (next.CurrentStepNum()) totalSteps
-            
+            showTab form next
+
             NewKeyPage.view form next.newKeyState
             
             form.progressBarBottom.Visible <- 

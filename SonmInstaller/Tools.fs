@@ -34,9 +34,10 @@ let getDrives () = // ToDo
 
 module Exn = 
     let getMessagesStack (e: exn) = 
-        let rec loop (res: string) (e: exn) = 
+        let rec loop (e: exn) (res: string) = 
             if e <> null && not <| String.IsNullOrEmpty e.Message then
                 let msg = e.Message.Trim().TrimEnd('.')
-                loop (sprintf "%s. %s" res msg) e.InnerException
+                if String.IsNullOrEmpty res then msg else sprintf "%s. %s" res msg
+                |> loop e.InnerException
             else res
-        loop "" e
+        loop e ""

@@ -5,15 +5,18 @@ open System.IO
 open System.Configuration
 open SonmInstaller.Tools
 
+open Nethereum.Web3.Accounts
 
 
 module private Impl = 
     let startProc (path: string) = path |> Process.Start |> ignore
-    let openKeyFile path = path |> Path.GetFileName |> startProc
+    let openKeyFolder path = path |> Path.GetDirectoryName |> startProc
 
 open Impl
 
 type DomainService () = 
+
+    let mutable account = Blockchain.genAccount ()
 
     let getAppSetting (key: string) = 
         ConfigurationManager.AppSettings.[key];
@@ -23,18 +26,28 @@ type DomainService () =
     let sonmOsImageDestination = 
         Path.Combine (appPath, Path.GetFileName sonmOsImageUrl)
 
-    //let generateKeyStore password = async {
-    //    let (fileName, json) = Blockchain.generateKeyStore password
-    //    let path = Path.Combine (dir, fileName)
-    //    File.WriteAllText (path, json)
-    //}
+    let generateKeyStore path pass = async {
+        let json = Blockchain.generateKeyStore account pass
+        File.WriteAllText (path, json)
+        return account.Address
+    }
+
+    let importKeyStore path pass = async {
+        let json = File.ReadAllText path
+        account <- Account.LoadFromKeyStore(json, pass)
+        return account.Address
+    }
 
     do  
         ensureAppPathExists () 
 
-    member __.GetService () = 
+    member x.GetService () = 
         { Mock.createEmptyService 3000 with
+            getUtcFilePath = fun () -> 
+                Path.Combine (appPath, (Blockchain.getUtcFileName account.Address) + ".json")
             startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
-            openKeyFolder = startProc
-            openKeyFile = openKeyFile
+            generateKeyStore = generateKeyStore
+            importKeyStore = importKeyStore
+            openKeyFolder = openKeyFolder
+            openKeyFile = startProc
         }

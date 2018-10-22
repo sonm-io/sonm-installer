@@ -14,12 +14,12 @@ module private Impl =
 
     let getRealService () = (new DomainService()).GetService()
 
-    let getService = function
+    let rec getService = function
         | Real   -> getRealService()
         | Empty  -> Mock.createEmptyService 4000
         | Mock   -> Mock.createService 1000 3000L
         | Custom -> 
-            let srv = Mock.createService 100 100L
+            let srv = Mock |> getService
             {
                 getRealService () with
                     startDownload = srv.startDownload
@@ -32,7 +32,7 @@ module private Impl =
 open Impl
 
 let getProgram (form: WizardForm) = 
-    let srv = Mock |> getService |> withCloseApp form
+    let srv = Custom |> getService |> withCloseApp form
     Program.mkProgram
         (Main.init srv)
         (Main.update srv)

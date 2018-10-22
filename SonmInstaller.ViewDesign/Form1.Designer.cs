@@ -35,6 +35,7 @@
             this.btnNext = new System.Windows.Forms.Button();
             this.saveNewKey = new System.Windows.Forms.SaveFileDialog();
             this.loader = new System.Windows.Forms.ProgressBar();
+            this.openKeystore = new System.Windows.Forms.OpenFileDialog();
             this.tabs = new SonmInstaller.WizardPages();
             this.step0 = new System.Windows.Forms.TabPage();
             this.linkWelcome = new System.Windows.Forms.LinkLabel();
@@ -106,7 +107,6 @@
             this.btnMessagePageTryAgain = new System.Windows.Forms.Button();
             this.lblMessagePageText = new System.Windows.Forms.Label();
             this.lblMessagePageHeader = new System.Windows.Forms.Label();
-            this.openKeystore = new System.Windows.Forms.OpenFileDialog();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -180,6 +180,11 @@
             this.loader.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.loader.TabIndex = 6;
             this.loader.Visible = false;
+            // 
+            // openKeystore
+            // 
+            this.openKeystore.FileName = "openFileDialog1";
+            this.openKeystore.Filter = "Json files|*.json|All files|*.*";
             // 
             // tabs
             // 
@@ -348,7 +353,7 @@
             // 
             this.lblNewKeyErrorMessage.AutoSize = true;
             this.lblNewKeyErrorMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.lblNewKeyErrorMessage.Location = new System.Drawing.Point(12, 196);
+            this.lblNewKeyErrorMessage.Location = new System.Drawing.Point(12, 175);
             this.lblNewKeyErrorMessage.Name = "lblNewKeyErrorMessage";
             this.lblNewKeyErrorMessage.Size = new System.Drawing.Size(100, 17);
             this.lblNewKeyErrorMessage.TabIndex = 7;
@@ -367,17 +372,16 @@
             // 
             // lblNewKeyPath
             // 
-            this.lblNewKeyPath.AutoSize = true;
-            this.lblNewKeyPath.Location = new System.Drawing.Point(9, 257);
+            this.lblNewKeyPath.Location = new System.Drawing.Point(9, 233);
             this.lblNewKeyPath.Name = "lblNewKeyPath";
-            this.lblNewKeyPath.Size = new System.Drawing.Size(90, 17);
+            this.lblNewKeyPath.Size = new System.Drawing.Size(599, 38);
             this.lblNewKeyPath.TabIndex = 5;
             this.lblNewKeyPath.Text = "c:/users/user";
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(9, 228);
+            this.label15.Location = new System.Drawing.Point(9, 204);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(442, 17);
             this.label15.TabIndex = 5;
@@ -389,7 +393,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label14.Location = new System.Drawing.Point(12, 60);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(392, 69);
+            this.label14.Size = new System.Drawing.Size(587, 58);
             this.label14.TabIndex = 5;
             this.label14.Text = "Enter a password.\r\nThis password encrypts your public key. You will need this pas" +
     "sword and keystore to make transactions in SONM blockchain.";
@@ -397,7 +401,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(255, 148);
+            this.label13.Location = new System.Drawing.Point(255, 127);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(118, 17);
             this.label13.TabIndex = 4;
@@ -406,7 +410,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(12, 148);
+            this.label12.Location = new System.Drawing.Point(12, 127);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(69, 17);
             this.label12.TabIndex = 4;
@@ -414,7 +418,7 @@
             // 
             // tbPasswordRepeat
             // 
-            this.tbPasswordRepeat.Location = new System.Drawing.Point(255, 171);
+            this.tbPasswordRepeat.Location = new System.Drawing.Point(255, 150);
             this.tbPasswordRepeat.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tbPasswordRepeat.Name = "tbPasswordRepeat";
             this.tbPasswordRepeat.PasswordChar = '*';
@@ -423,7 +427,7 @@
             // 
             // tbPassword
             // 
-            this.tbPassword.Location = new System.Drawing.Point(12, 171);
+            this.tbPassword.Location = new System.Drawing.Point(12, 150);
             this.tbPassword.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.PasswordChar = '*';
@@ -632,6 +636,7 @@
             this.tbSelectedKeyPassword.Location = new System.Drawing.Point(15, 174);
             this.tbSelectedKeyPassword.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tbSelectedKeyPassword.Name = "tbSelectedKeyPassword";
+            this.tbSelectedKeyPassword.PasswordChar = '*';
             this.tbSelectedKeyPassword.Size = new System.Drawing.Size(216, 22);
             this.tbSelectedKeyPassword.TabIndex = 9;
             // 
@@ -756,6 +761,7 @@
             this.lblHeader3.Name = "lblHeader3";
             this.lblHeader3.Size = new System.Drawing.Size(410, 31);
             this.lblHeader3.TabIndex = 2;
+            this.lblHeader3.Tag = "header";
             this.lblHeader3.Text = "Step {0} of {1}. Withdraw settings";
             // 
             // step4disk
@@ -964,11 +970,6 @@
             this.lblMessagePageHeader.TabIndex = 3;
             this.lblMessagePageHeader.Tag = "header";
             this.lblMessagePageHeader.Text = "Error";
-            // 
-            // openKeystore
-            // 
-            this.openKeystore.FileName = "openFileDialog1";
-            this.openKeystore.Filter = "Json files|*.json|All files|*.*";
             // 
             // WizardFormDesign
             // 
