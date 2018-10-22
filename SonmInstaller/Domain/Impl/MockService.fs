@@ -57,7 +57,8 @@ let createEmptyService asyncTasksWait =
         openKeyFolder     = Impl.debugWrite "openKeyFolder"
         openKeyFile       = Impl.debugWrite "openKeyFile"
         callSmartContract = (fun _ _ -> wait ms "callSmartContract" ())
-        makeUsbStick   = (fun _   -> wait ms "writeToUsbStick" ())
+        makeUsbStick      = (fun _   -> wait ms "writeToUsbStick" ())
+        closeApp          = id
     }
 
 let createService asyncTasksTime downloadTime  = 

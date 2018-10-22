@@ -2,10 +2,11 @@
 
 open System.Windows.Forms
 
-    let viewInvoker view (form: #Form) (prev: 's option) (next: 's) (msg: 'm) = 
-        let action = System.Action<unit>(fun _ -> view form prev next msg)
+    let crossThreadControlInvoke (form: #Control) (action: unit -> unit) = 
+        let a = System.Action<unit>(action)
         if not form.IsDisposed then
             if form.InvokeRequired then
-                form.Invoke(action, ()) |> ignore
+                form.Invoke(a, ()) |> ignore
             else
-                action.Invoke()
+                a.Invoke()        
+

@@ -16,6 +16,7 @@ type Service =
         openKeyFile:   (*path*) string -> unit
         callSmartContract: string -> float -> Async<unit>
         makeUsbStick: int -> Async<unit>
+        closeApp: unit -> unit
     } 
     interface NewKeyPage.IService with
         member __.DefaultNewKeyPath = Tools.defaultNewKeyPath
@@ -28,3 +29,4 @@ type Service =
         member x.OpenKeyFile path = x.openKeyFile path
         member x.CallSmartContract withdrawTo minPayout = x.callSmartContract withdrawTo minPayout
         member x.MakeUsbStick drive = x.makeUsbStick drive
+        member x.CloseApp () = x.closeApp ()

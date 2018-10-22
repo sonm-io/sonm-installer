@@ -21,6 +21,7 @@ module Main =
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
         abstract member MakeUsbStick: drive: int -> Async<unit>
+        abstract member CloseApp: unit -> unit
 
     let init (srv: IService) () =
         {
@@ -46,8 +47,69 @@ module Main =
         }, []
 
     module private Impl = 
-        open System.IO
     
+        let goToStep (s: Main.State) step =
+            { s with 
+                    currentStep = step 
+                    stepsHistory = s.currentStep::s.stepsHistory
+            }
+
+
+        // Exceptions Helpers (MessagePage helpers)
+        module ExnHlp = 
+
+            let getMessagePage header message tryAgainVisible = 
+                {
+                    header = header
+                    message = message
+                    tryAgainVisible = tryAgainVisible
+                }
+        
+            let showExn (tryAgainVisible: bool) header (s: State) (e: exn) =
+                { s with show = ShowMessagePage <| getMessagePage header (Exn.getMessagesStack e) tryAgainVisible }
+        
+        // Async Commands Helpers
+        module AsyncHlp = 
+
+            let mapStateOk map (state, res) = 
+                match res with
+                | Ok value -> map state value
+                | Error _ -> state
+                , res
+
+            let startAsync (s: Main.State) (msg: AsyncTask<'res> -> Msg) =
+                let cmd = Cmd.ofSub (fun d -> AsyncTask.Start |> msg |> d)
+                s, cmd, None
+
+            let getAsyncCmd (serviceMethod: unit -> Async<'res>) mapMsg = 
+                Cmd.ofAsync
+                    serviceMethod 
+                    ()
+                    (fun res -> res |> Ok |> mapMsg)
+                    (fun e -> e |> Error  |> mapMsg)
+
+            let getPending (s: State) (serviceMethod: unit -> Async<'res>) mapMsg = 
+                let cmd = getAsyncCmd serviceMethod mapMsg
+                { s with isPending = true }, cmd
+
+                
+            let toScreen (scr: Screen) errorHeader (s, res) = 
+                match res with
+                | Ok _ -> goToStep s (scr, s.CurrentStepNum () + 1)
+                | Error e -> ExnHlp.showExn false errorHeader s e
+                , res
+
+            let processTask 
+                (s: State) 
+                (serviceMethod: unit -> Async<'res>) 
+                mapMsg 
+                (mapRes: State * Result<'res,exn> -> State * Cmd<Msg>) 
+                = function
+                | Start -> 
+                    getPending s serviceMethod mapMsg
+                | Complete res -> 
+                    mapRes ({ s with isPending = false }, res)
+
         let startDownload (service: IService) dispatch =
             let progressCb bytesDownloaded total = 
                 Download.Progress (bytesDownloaded, total) |> dispatch
@@ -56,18 +118,8 @@ module Main =
             service.StartDownload
                 progressCb
                 completeCb
-        
-        let goToStep (s: Main.State) step =
-            { s with 
-                    currentStep = step 
-                    stepsHistory = s.currentStep::s.stepsHistory
-            }
 
-        let startAsync (s: Main.State) (msg: AsyncTask<'res> -> Msg) =
-            let cmd = Cmd.ofSub (fun d -> AsyncTask.Start |> msg |> d)
-            s, cmd, None
-
-        let nextBtn (service: IService) (state: Main.State) = 
+        let nextBtn (srv: IService) (state: Main.State) = 
 
             let userTriesToGetNextState (s: Main.State) =
                 let stay = s, Cmd.none, None
@@ -91,21 +143,23 @@ module Main =
                     let keyGenState = NewKeyPage.update s.newKeyState NewKeyPage.Msg.Validate
                     let ns = { s with newKeyState = keyGenState }
                     match keyGenState.NextAllowed() with
-                    | true  -> startAsync ns GenerateKey
+                    | true  -> AsyncHlp.startAsync ns GenerateKey
                     | false -> ns, Cmd.none, None
                 | Screen.S2a2KeyGenSuccess -> goTo Screen.S3MoneyOut
                 | Screen.S2b1SelectJson    -> goTo Screen.S2b2JsonPassword
                 | Screen.S2b2JsonPassword  -> goTo Screen.S3MoneyOut
-                | Screen.S3MoneyOut        -> startAsync s CallSmartContract
-                | Screen.S4SelectDisk      -> startAsync s MakeUsbStick
+                | Screen.S3MoneyOut        -> AsyncHlp.startAsync s CallSmartContract
+                | Screen.S4SelectDisk      -> AsyncHlp.startAsync s MakeUsbStick
                 | Screen.S5Progress
-                | Screen.S6Finish          -> failwith "Can't move next from here"
+                | Screen.S6Finish          -> 
+                    let closeApp = Cmd.ofSub (fun _ -> srv.CloseApp())
+                    s, closeApp, None
                 | _                        -> failwith "Unknown case"
     
             userTriesToGetNextState state
             |> fun (s, cmd, scr) -> 
                 scr 
-                |> Option.map (fun scr -> scr, (s.CurrentStepNum() + 1))
+                |> Option.map (fun scr -> scr, s.CurrentStepNum()+1)
                 |> function
                     | Some step -> goToStep s step
                     | _ -> s
@@ -146,45 +200,6 @@ module Main =
                 nextButton = getNextBtn state
             }, cmd
 
-        let getMessagePage header message tryAgainVisible = 
-            {
-                header = header
-                message = message
-                tryAgainVisible = tryAgainVisible
-            }
-        
-        let getAsyncCmd (serviceMethod: 'arg -> Async<'res>) arg mapResult = 
-            Cmd.ofAsync
-                serviceMethod 
-                arg
-                (fun res -> res |> Ok |> mapResult)
-                (fun e -> e |> Error  |> mapResult)
-
-        let getPending (s: State) (serviceMethod: 'arg -> Async<'res>) arg mapResult = 
-            let cmd = getAsyncCmd serviceMethod arg mapResult
-            { s with isPending = true }, cmd
-
-        let processAsyncTask (s: State) (serviceMethod: 'arg -> Async<'res>) arg mapResult successScreen errorHeader = function
-            | Start -> 
-                getPending s serviceMethod arg mapResult
-            | Complete res -> 
-                match res with
-                | Ok () (*ToDo arg*) -> goToStep { s with isPending = false } (successScreen, (s.CurrentStepNum() + 1)), Cmd.none
-                | Error e -> 
-                    let msgPage = getMessagePage errorHeader (Exn.getMessagesStack e) false
-                    { s with show = ShowMessagePage msgPage; isPending = false }, Cmd.none
-
-        let keyCreationComplete (s: Main.State) successScreen errorHeader res =
-            let keyCreationSuccess (s: Main.State) address nextScreen = 
-                let step = nextScreen, (s.CurrentStepNum() + 1)
-                { goToStep s step with etherAddress = Some address; isPending = false }, Cmd.none
-            let keyCreationFail (s: Main.State) (e: exn) header = 
-                let showMessage = ShowMessagePage <| getMessagePage header e.Message false
-                { s with show = showMessage; isPending = false }, Cmd.none
-            match res with
-            | Ok address -> keyCreationSuccess s address successScreen
-            | Error e -> keyCreationFail s e errorHeader            
-
         let computeNewState (srv: IService) (s: State) = function
             | BackBtn -> 
                 match s.show with
@@ -207,13 +222,14 @@ module Main =
                 let res = NewKeyPage.update s.newKeyState action
                 let ns = { s with newKeyState = res }
                 ns, Cmd.none
-            | GenerateKey action ->
-                match action with
-                | AsyncTask.Start -> 
-                    let mapResult = AsyncTask.Complete >> GenerateKey
-                    let cmd = getAsyncCmd srv.GenerateKeyStore s.newKeyState.password mapResult
-                    { s with isPending = true }, cmd
-                | AsyncTask.Complete res -> keyCreationComplete s Screen.S2a2KeyGenSuccess "Key Store Generation Error:" res
+            | GenerateKey task -> 
+                task 
+                |> AsyncHlp.processTask s
+                    (fun () -> srv.GenerateKeyStore s.newKeyState.password)
+                    (AsyncTask.Complete >> GenerateKey)
+                    (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr }) 
+                    >> AsyncHlp.toScreen Screen.S2a2KeyGenSuccess "Key Store Generation Error:" 
+                    >> fun (s, _) -> s, Cmd.none)
             | OpenKeyDir -> 
                 srv.OpenKeyFolder s.newKeyState.keyPath
                 s, Cmd.none
@@ -228,35 +244,33 @@ module Main =
                 | ImportKey.ChangePassword pass -> 
                     let keyStore = { s.existingKeystore with password = pass }
                     { s with existingKeystore = keyStore }, Cmd.none
-                | ImportKey.Import act -> 
-                    match act with
-                    | AsyncTask.Start -> 
-                        let mapResult = AsyncTask.Complete >> ImportKey.Import >> Msg.ImportKey
-                        let cmd = getAsyncCmd srv.ImportKeyStore s.existingKeystore.password mapResult
-                        { s with isPending = true }, cmd
-                    | AsyncTask.Complete res -> keyCreationComplete s Screen.S3MoneyOut "Key Store Import Error:" res
+                | ImportKey.Import task -> 
+                    task 
+                    |> AsyncHlp.processTask s
+                        (fun () -> srv.ImportKeyStore s.existingKeystore.password)
+                        (AsyncTask.Complete >> ImportKey.Import >> Msg.ImportKey)
+                        (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr })
+                        >> AsyncHlp.toScreen Screen.S3MoneyOut "Key Store Import Error:"
+                        >> fun (s, _) -> s, Cmd.none)
             | Withdraw msg -> 
                 match msg with
                 | Address addr -> { s with withdraw = { s.withdraw with address = addr }}, Cmd.none
                 | Threshold value -> { s with withdraw = { s.withdraw with thresholdPayout = value }}, Cmd.none
             | CallSmartContract task ->
-                processAsyncTask s
-                    (srv.CallSmartContract s.withdraw.address)
-                    (float s.withdraw.thresholdPayout)
+                task
+                |> AsyncHlp.processTask s
+                    (fun () -> srv.CallSmartContract s.withdraw.address (float s.withdraw.thresholdPayout))
                     (AsyncTask.Complete >> CallSmartContract)
-                    Screen.S4SelectDisk
-                    "Call Smart Contract Failed"
-                    task
+                    (AsyncHlp.toScreen Screen.S4SelectDisk "Call Smart Contract Failed"
+                    >> fun (s, _) -> s, Cmd.none)
             | SelectDrive drive -> { s with selectedDrive = Some drive }, Cmd.none 
             | MakeUsbStick task -> 
-                processAsyncTask s
-                    srv.MakeUsbStick
-                    s.selectedDrive.Value.Value
+                task
+                |> AsyncHlp.processTask s
+                    (fun () -> srv.MakeUsbStick s.selectedDrive.Value.Value)
                     (AsyncTask.Complete >> MakeUsbStick)
-                    Screen.S6Finish
-                    "Error"
-                    task
-
+                    (AsyncHlp.toScreen Screen.S6Finish "Error" 
+                    >> fun (s, _) -> s, Cmd.none)
         
     open Impl
 

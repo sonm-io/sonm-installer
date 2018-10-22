@@ -25,13 +25,19 @@ module private Impl =
                     startDownload = srv.startDownload
             }
 
+    let withCloseApp (form: WizardForm) srv = 
+        let action = fun () -> form.Close()
+        { srv with closeApp = fun () -> crossThreadControlInvoke form action }
+
 open Impl
 
 let getProgram (form: WizardForm) = 
-    let srv = Mock |> getService
+    let srv = Mock |> getService |> withCloseApp form
     Program.mkProgram
         (Main.init srv)
         (Main.update srv)
-        (viewInvoker Main.view form)
+        (fun prev next msg -> 
+            let action = fun () -> Main.view form prev next msg
+            crossThreadControlInvoke form action)
     |> Program.withSubscription (subscription form)
     |> Program.withErrorHandler (fun (_, e) -> raise e)
