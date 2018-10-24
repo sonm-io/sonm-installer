@@ -20,7 +20,7 @@ type WizardForm() as this =
         |> Seq.map (function Some v -> v | _ -> failwith "imposible")
         |> Seq.map (fun i -> i :?> Label)
         |> List.ofSeq
-
+    
     do
         headerLabels <- getHeaders ()
         headerTpls <- headerLabels |> Seq.map (fun i -> i.Text) |> List.ofSeq

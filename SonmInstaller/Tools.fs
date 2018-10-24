@@ -34,7 +34,8 @@ module Exn =
             else res
         loop e ""
 
-module DiskDrives =
+// ToDo: remove this module
+module DiskDrivesManager =
 
     open System.Management
     open System

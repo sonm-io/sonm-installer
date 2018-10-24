@@ -16,7 +16,7 @@ module private Impl =
 
     let rec getService = function
         | Real   -> getRealService()
-        | Empty  -> Mock.createEmptyService 4000
+        | Empty  -> { Mock.createEmptyService 0 with getUsbDrives = (Real |> getService).getUsbDrives }
         | Mock   -> Mock.createService 1000 3000L
         | Custom -> 
             let srv = Mock |> getService
@@ -32,7 +32,7 @@ module private Impl =
 open Impl
 
 let getProgram (form: WizardForm) = 
-    let srv = Custom |> getService |> withCloseApp form
+    let srv = Empty |> getService |> withCloseApp form
     Program.mkProgram
         (Main.init srv)
         (Main.update srv)

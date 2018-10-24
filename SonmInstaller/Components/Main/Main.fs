@@ -40,6 +40,11 @@ type Withdraw = {
 
 type Show = ShowStep | ShowMessagePage of MessagePage
 
+type UsbDrives = {
+    list: (int * string) list
+    selectedDrive: (int * string) option
+}
+
 type State = {
     currentStep: Step
     stepsHistory: Step list
@@ -48,13 +53,13 @@ type State = {
     backButton: Button.State
     nextButton: Button.State
     isPending: bool
+    usbDrives: UsbDrives
     // progress:
     hasWallet: bool
     newKeyState: NewKeyPage.State
     existingKeystore: ExistingKeystore
     etherAddress: string option
     withdraw: Withdraw
-    selectedDrive: ListItem option
 }
 with
     member this.IsAtBeginning () = this.stepsHistory = []
@@ -94,6 +99,10 @@ type WithdrawMsg =
     | Address of string
     | Threshold of string
 
+type UsbDrivesMsg = 
+    | Change
+    | SelectDrive of (int * string) option
+
 type Msg =
     | BackBtn
     | NextBtn
@@ -106,5 +115,5 @@ type Msg =
     | ImportKey of ImportKey
     | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
-    | SelectDrive of ListItem
+    | UsbDrives of UsbDrivesMsg
     | MakeUsbStick of AsyncTask<unit>

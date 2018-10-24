@@ -2,10 +2,14 @@
 
 open Elmish
 open System.Windows.Forms
+open System.Diagnostics
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
 open SonmInstaller.Components.Main.Msg
 open SonmInstaller.Tools
+open UsbDrivesManager
+
+let usbMan = new UsbManager()
 
 let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) = 
     this.Load.Add <| fun _ ->
@@ -14,6 +18,10 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     this.btnBack.Click.Add <| fun _ -> d BackBtn
 
     this.btnNext.Click.Add <| fun _ -> d NextBtn
+
+    fun (e: UsbStateChangedEventArgs) -> Change |> UsbDrives |> d
+    |> fun i -> new UsbStateChangedEventHandler(i)
+    |> usbMan.add_StateChanged    
 
     //#region step1choose Do you have etherium wallet?
     this.radioNoWallet.CheckedChanged.Add <| fun _ ->
@@ -87,8 +95,9 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     //#region step4 Select disk to write to
     this.cmbDisk.SelectedValueChanged.Add <| fun _ -> 
         this.cmbDisk.SelectedItem
-        |> (fun i -> i :?> ListItem)
-        |> SelectDrive
+        |> (function | null -> None | i -> i :?> ListItem |> (fun i -> i.Value, i.Text) |> Some)
+        |> UsbDrivesMsg.SelectDrive
+        |> Msg.UsbDrives
         |> d
     //#endregion
 

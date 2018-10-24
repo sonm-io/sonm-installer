@@ -54,6 +54,7 @@ let createEmptyService asyncTasksWait =
     let wait = Impl.waitReturn
     {
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
+        getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
         startDownload     = Impl.immidiatelyDownload
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
         importKeyStore    = (fun _ _ -> wait ms "importKeyStore" address)

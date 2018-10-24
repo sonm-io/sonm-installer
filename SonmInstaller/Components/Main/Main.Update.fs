@@ -11,6 +11,7 @@ module Main =
     
     type IService = 
         inherit NewKeyPage.IService
+        abstract member GetUsbDrives: unit -> (int * string) list
         abstract member StartDownload: 
             progressCb: (int64 -> int64 -> unit) ->
             completeCb: (Result<unit, exn> -> unit) ->  // ToDo: make it just exn option
@@ -43,7 +44,10 @@ module Main =
                 address = ""
                 thresholdPayout = "1000"
             }
-            selectedDrive = None
+            usbDrives = {
+                list = srv.GetUsbDrives()
+                selectedDrive = None
+            }
         }, []
 
     module private Impl = 
@@ -53,7 +57,6 @@ module Main =
                     currentStep = step 
                     stepsHistory = s.currentStep::s.stepsHistory
             }
-
 
         // Exceptions Helpers (MessagePage helpers)
         module ExnHlp = 
@@ -182,7 +185,7 @@ module Main =
                     | Screen.S2a1KeyGen       -> s.newKeyState.NextAllowed()
                     | Screen.S2b1SelectJson   -> s.existingKeystore.path.IsSome
                     | Screen.S2b2JsonPassword -> not <| String.IsNullOrEmpty(s.existingKeystore.password)
-                    | Screen.S4SelectDisk     -> s.selectedDrive.IsSome
+                    | Screen.S4SelectDisk     -> s.usbDrives.selectedDrive.IsSome
                     | _ -> true
                 let b = match s.CurrentScreen () with
                         | Screen.S0Welcome    -> button.btnBegin
@@ -265,11 +268,22 @@ module Main =
                     (CallSmartContract)
                     (AsyncHlp.toScreen Screen.S4SelectDisk "Call Smart Contract Failed"
                     >> fun (s, _) -> s, Cmd.none)
-            | SelectDrive drive -> { s with selectedDrive = Some drive }, Cmd.none 
+            | UsbDrives act -> 
+                let usbDrives = 
+                    match act with
+                    | Change -> 
+                        let list = srv.GetUsbDrives ()
+                        let currentSelected = s.usbDrives.selectedDrive
+                        let selected = 
+                            if currentSelected.IsNone || not <| List.contains currentSelected.Value list then None 
+                            else currentSelected
+                        { s.usbDrives with list = list; selectedDrive = selected }
+                    | SelectDrive drive -> { s.usbDrives with selectedDrive = drive }
+                { s with usbDrives = usbDrives }, Cmd.none 
             | MakeUsbStick task -> 
                 task
                 |> AsyncHlp.processTask s
-                    (fun () -> srv.MakeUsbStick s.selectedDrive.Value.Value)
+                    (fun () -> srv.MakeUsbStick (s.usbDrives.selectedDrive.Value |> fst))
                     MakeUsbStick
                     (AsyncHlp.toScreen Screen.S6Finish "Error" 
                     >> fun (s, _) -> s, Cmd.none)

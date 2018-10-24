@@ -71,6 +71,11 @@
     <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UsbDrivesManager\UsbDrivesManager.csproj">
+      <Name>UsbDrivesManager</Name>
+      <Project>{7caa526e-cc9d-435a-8286-f3f6265de9bb}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>D:\sonm\prj\installer\repo\packages\Portable.BouncyCastle.1.8.2\lib\net40\BouncyCastle.Crypto.dll</HintPath>
     </Reference>

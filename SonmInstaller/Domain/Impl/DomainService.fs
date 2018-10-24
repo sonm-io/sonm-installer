@@ -1,9 +1,11 @@
 ﻿namespace SonmInstaller.Domain
 
+open System
 open System.Diagnostics
 open System.IO
 open System.Configuration
 open SonmInstaller.Tools
+open UsbDrivesManager
 
 open Nethereum.Web3.Accounts
 
@@ -17,6 +19,8 @@ open Impl
 type DomainService () = 
 
     let mutable account = Blockchain.genAccount ()
+
+    let usbMan = new UsbManager()
 
     let getAppSetting (key: string) = 
         ConfigurationManager.AppSettings.[key];
@@ -38,6 +42,15 @@ type DomainService () =
         return account.Address
     }
 
+    let getUsbDrives () = 
+        let toStr (di: DiskInfo) =
+            let toGb (size: Int64) = (float size) / 1024. / 1024. / 1024.
+            sprintf "%d: %s [parts: %d] [%0.3f Gb]" di.Index di.Model di.Partitions (toGb di.Size)
+        usbMan.GetUsbDrives()
+        |> Seq.map (fun i -> i.Index, toStr i)
+        |> Seq.sortBy fst
+        |> List.ofSeq
+
     do  
         ensureAppPathExists () 
 
@@ -45,6 +58,7 @@ type DomainService () =
         { Mock.createEmptyService 3000 with
             getUtcFilePath = fun () -> 
                 Path.Combine (appPath, (Blockchain.getUtcFileName account.Address) + ".json")
+            getUsbDrives = getUsbDrives
             startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
             generateKeyStore = generateKeyStore
             importKeyStore = importKeyStore

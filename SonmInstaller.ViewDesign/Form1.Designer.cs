@@ -801,6 +801,7 @@
             // 
             // cmbDisk
             // 
+            this.cmbDisk.DisplayMember = "Text";
             this.cmbDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbDisk.FormattingEnabled = true;
             this.cmbDisk.Location = new System.Drawing.Point(12, 230);
@@ -808,6 +809,7 @@
             this.cmbDisk.Name = "cmbDisk";
             this.cmbDisk.Size = new System.Drawing.Size(587, 24);
             this.cmbDisk.TabIndex = 3;
+            this.cmbDisk.ValueMember = "Value";
             // 
             // lblHeader4
             // 

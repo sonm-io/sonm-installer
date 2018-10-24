@@ -1,6 +1,7 @@
 ﻿[<AutoOpen>]
 module SonmInstaller.Components.MainView
 
+open System.Collections.Generic
 open SonmInstaller
 open SonmInstaller.Tools
 open SonmInstaller.Components
@@ -24,18 +25,19 @@ module Main =
             let reset (form: WizardForm) = 
                 update form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
         
+        let addDrives (form: WizardForm) (drivesList: (int * string) list) = 
+            drivesList
+            |> List.map (fun (i, text) -> new ListItem(i, text))
+            |> Array.ofList
+            |> (fun dataSource -> form.cmbDisk.DataSource <- dataSource)
 
     open Shared
 
     module private Initial =
-        
-        let addDrives (form: WizardForm) = 
-            Tools.DiskDrives.getDiskDrives ()
-            |> List.iter (fun i -> form.cmbDisk.Items.Add i |> ignore)
 
         let view (form: WizardForm) (state: Main.State) = 
             DownloadProgressBar.reset form
-            addDrives form
+            addDrives form state.usbDrives.list
             form.tbThresholdAmount.Text <- state.withdraw.thresholdPayout
         
 
@@ -104,6 +106,13 @@ module Main =
             doPropIf (fun s -> s.existingKeystore.path) (
                 Option.defaultValue "" 
                 >> fun path -> form.lblLoadedKeyPath.Text <- path
+            )
+
+            doPropIf (fun s -> s.usbDrives.list) (fun usbDrives -> 
+                addDrives form usbDrives
+                match next.usbDrives.selectedDrive with
+                | Some (i, _) -> form.cmbDisk.SelectedValue <- i
+                | None -> form.cmbDisk.SelectedIndex <- -1
             )
 
             showTab form next
