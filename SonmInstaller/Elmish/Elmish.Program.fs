@@ -9,12 +9,12 @@ namespace Elmish
 
 /// Program type captures various aspects of program behavior
 type Program<'arg, 'model, 'msg, 'view> = {
-    init : 'arg -> 'model * Cmd<'msg>
-    update : 'model -> 'msg -> 'model * Cmd<'msg> 
+    init      : 'arg -> 'model * Cmd<'msg>
+    update    : 'model -> 'msg -> 'model * Cmd<'msg> 
     subscribe : 'model -> Cmd<'msg>
-    view : 'model option -> 'model -> 'msg option -> 'view
-    setState : 'model option -> 'model -> 'msg option -> unit
-    onError : (string*exn) -> unit
+    view      : 'model option -> 'model -> Dispatch<'msg> -> 'msg option -> 'view
+    setState  : 'model option -> 'model -> Dispatch<'msg> -> 'msg option -> unit
+    onError   : (string*exn) -> unit
 }
 
 /// Program module - functions to manipulate program instances
@@ -25,11 +25,11 @@ module Program =
     let mkProgram 
         (init : 'arg -> 'model * Cmd<'msg>) 
         (update : 'model -> 'msg -> 'model * Cmd<'msg>)
-        (view : 'model option -> 'model -> 'msg option -> 'view) =
+        (view : 'model option -> 'model -> Dispatch<'msg> -> 'msg option -> 'view) =
         { init = init
           update = update
           view = view
-          setState = fun prev next -> view prev next >> ignore
+          setState = fun prev next d m -> view prev next d m |> ignore
           subscribe = fun _ -> Cmd.none
           onError = Log.onError }
 
@@ -37,11 +37,11 @@ module Program =
     let mkSimple 
         (init : 'arg -> 'model) 
         (update : 'model -> 'msg -> 'model)
-        (view : 'model option -> 'model -> 'msg option -> 'view) =
+        (view : 'model option -> 'model -> Dispatch<'msg> -> 'msg option -> 'view) =
         { init = init >> fun state -> state, Cmd.none
           update = fun model msg -> update model msg |> fun s -> s, Cmd.none
           view = view
-          setState = fun prev next -> view prev next >> ignore
+          setState = fun prev next d m -> view prev next d m |> ignore
           subscribe = fun _ -> Cmd.none
           onError = Log.onError }
 
@@ -92,7 +92,7 @@ module Program =
                     let newState =
                         try
                             let (model', cmd') = program.update state msg
-                            program.setState (Some state) model' (Some msg)
+                            program.setState (Some state) model' mb.Post (Some msg)
                             cmd' |> List.iter (fun sub -> sub mb.Post)
                             model'
                         with ex ->
@@ -102,7 +102,7 @@ module Program =
                 }
             loop model
         )
-        program.setState None model None
+        program.setState None model inbox.Post None
         let sub = 
             try 
                 program.subscribe model 

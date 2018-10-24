@@ -47,7 +47,7 @@ module Main =
         let totalSteps = 6
 
         let downloadComplete (form: WizardForm) = function
-            | Ok () -> 
+            | Result.Ok () -> 
                 form.pnlErrorDownload.Visible <- false
                 let text = "Download Complete"
                 form.progressBar.LabelTpl       <- text
@@ -64,7 +64,7 @@ module Main =
             let label = form.HeaderLabels.[form.tabs.SelectedIndex]
             label.Text <- String.Format(form.HeaderTpls.[form.tabs.SelectedIndex], current, total)
 
-        let showTab (form: WizardForm) (s: Main.State) = 
+        let show (form: WizardForm) (s: Main.State) d = 
             match s.show with
             | ShowStep -> 
                 form.tabs.SelectedIndex <- LanguagePrimitives.EnumToValue (s.CurrentScreen ())
@@ -74,8 +74,16 @@ module Main =
                 form.lblMessagePageHeader.Text <- page.header
                 form.lblMessagePageText.Text <- page.message
                 form.btnMessagePageTryAgain.Visible <- page.tryAgainVisible
+            | ShowMessageBox box -> 
+                let result = MessageBox.Show (box.text, box.caption, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button2)
+                match result with
+                | DialogResult.Yes -> DlgRes.Ok
+                | DialogResult.No  -> DlgRes.Cancel
+                | _ -> failwith "Unhandled result type"
+                |> Msg.DialogResult
+                |> d
 
-        let view (form: WizardForm) (prev: Main.State option) (next: Main.State) = 
+        let view (form: WizardForm) (prev: Main.State option) (next: Main.State) d = 
             let doIf = doIfChanged prev next
             let inline doPropIf p a = doPropIfChanged prev next p a
     
@@ -115,7 +123,7 @@ module Main =
                 | None -> form.cmbDisk.SelectedIndex <- -1
             )
 
-            showTab form next
+            show form next d
 
             NewKeyPage.view form next.newKeyState
             
@@ -135,16 +143,16 @@ module Main =
             form.progressBarBottom.ProgressCurrent <- d
             form.progressBar.ProgressCurrent <- d
 
-    let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
+    let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
         match msg with
         | Msg.Download (Download.Progress (downloaded, total)) -> 
             Messaged.downloadProgress form downloaded total
         | _ -> 
-            Common.view form prev next 
+            Common.view form prev next d
 
-    let view (form: WizardForm) (prev: Main.State option) (next: Main.State) msg = 
+    let view (form: WizardForm) (prev: Main.State option) (next: Main.State) dispatch msg = 
         if Option.isNone prev then
             Initial.view form next
         match msg with
-            | Some msg -> messagedView form prev next msg
-            | _        -> Common.view  form prev next
+            | Some msg -> messagedView form prev next dispatch msg
+            | _        -> Common.view  form prev next dispatch

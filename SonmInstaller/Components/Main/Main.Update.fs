@@ -74,21 +74,19 @@ module Main =
         // Async Commands Helpers
         module AsyncHlp = 
 
-            let mapStateOk map (state, res) = 
+            let mapStateOk map (state: State, res: Result<'r, 'e>) = 
                 match res with
-                | Ok value -> map state value
-                | Error _ -> state
+                | Result.Ok value -> map state value
+                | Result.Error _ -> state
                 , res
 
-            let startAsync (s: Main.State) (msg: AsyncTask<'res> -> Msg) =
-                let cmd = Cmd.ofSub (fun d -> AsyncTask.Start |> msg |> d)
-                s, cmd, None
+            let startAsync (msg: AsyncTask<'res> -> Msg) = Cmd.ofSub (fun d -> AsyncTask.Start |> msg |> d)
 
             let getAsyncCmd (serviceMethod: unit -> Async<'res>) mapMsg = 
                 Cmd.ofAsync
                     serviceMethod 
                     ()
-                    (fun res -> res |> Ok |> mapMsg)
+                    (fun res -> res |> Result.Ok |> mapMsg)
                     (fun e -> e |> Error  |> mapMsg)
 
             let getPending (s: State) (serviceMethod: unit -> Async<'res>) mapMsg = 
@@ -98,8 +96,8 @@ module Main =
                 
             let toScreen (scr: Screen) errorHeader (s, res) = 
                 match res with
-                | Ok _ -> goToStep s (scr, s.CurrentStepNum () + 1)
-                | Error e -> ExnHlp.showExn false errorHeader s e
+                | Result.Ok _ -> goToStep s (scr, s.CurrentStepNum () + 1)
+                | Result.Error e -> ExnHlp.showExn false errorHeader s e
                 , res
 
             let processTask 
@@ -122,9 +120,9 @@ module Main =
                 progressCb
                 completeCb
 
-        let nextBtn (srv: IService) (state: Main.State) = 
+        let nextBtn (srv: IService) (state: Main.State) (dialogRes: DlgRes option) = 
 
-            let userTriesToGetNextState (s: Main.State) =
+            let userTriesToGetNextState (s: Main.State) (dialogRes: DlgRes option) =
                 let stay = s, Cmd.none, None
                 let goTo (screen: Screen) = s, Cmd.none, Some screen
                 
@@ -146,20 +144,28 @@ module Main =
                     let keyGenState = NewKeyPage.update s.newKeyState NewKeyPage.Msg.Validate
                     let ns = { s with newKeyState = keyGenState }
                     match keyGenState.NextAllowed() with
-                    | true  -> AsyncHlp.startAsync ns GenerateKey
+                    | true  -> ns, (AsyncHlp.startAsync GenerateKey), None
                     | false -> ns, Cmd.none, None
                 | Screen.S2a2KeyGenSuccess -> goTo Screen.S3MoneyOut
                 | Screen.S2b1SelectJson    -> goTo Screen.S2b2JsonPassword
-                | Screen.S2b2JsonPassword  -> AsyncHlp.startAsync s (ImportKey.Import >> Msg.ImportKey)
-                | Screen.S3MoneyOut        -> AsyncHlp.startAsync s CallSmartContract
-                | Screen.S4SelectDisk      -> AsyncHlp.startAsync s MakeUsbStick
+                | Screen.S2b2JsonPassword  -> s, (AsyncHlp.startAsync (ImportKey.Import >> Msg.ImportKey)), None
+                | Screen.S3MoneyOut        -> s, (AsyncHlp.startAsync CallSmartContract), None
+                | Screen.S4SelectDisk      -> 
+                    match dialogRes with
+                    | None -> 
+                        let box = { 
+                            caption = "Caution"
+                            text = "All data from selected USB drive will be erased. Continue?" }
+                        { s with show = ShowMessageBox box }, Cmd.none, None
+                    | Some DlgRes.Ok     -> s, (AsyncHlp.startAsync MakeUsbStick), None
+                    | Some DlgRes.Cancel -> stay
                 | Screen.S5Progress
                 | Screen.S6Finish          -> 
                     let closeApp = Cmd.ofSub (fun _ -> srv.CloseApp())
                     s, closeApp, None
                 | _                        -> failwith "Unknown case"
     
-            userTriesToGetNextState state
+            userTriesToGetNextState state dialogRes
             |> fun (s, cmd, scr) -> 
                 scr 
                 |> Option.map (fun scr -> scr, s.CurrentStepNum()+1)
@@ -196,7 +202,8 @@ module Main =
                     Enabled = 
                         s.show |> function 
                             | ShowStep -> isNextAllowedOnScreen (s.CurrentScreen()) 
-                            | ShowMessagePage _ -> false
+                            | ShowMessagePage _ 
+                            | ShowMessageBox _ -> false
                         && not s.isPending
                 }
             
@@ -214,7 +221,11 @@ module Main =
                         stepsHistory = s.HistoryTail()
                     }, Cmd.none
                 | ShowMessagePage _ -> { s with show = ShowStep }, Cmd.none
-            | NextBtn -> nextBtn srv s
+                | _ -> failwith "Illegal case"
+            | NextBtn -> nextBtn srv s None
+            | DialogResult result -> 
+                let ns, cmd = nextBtn srv s (Some result)
+                { ns with show = ShowStep }, cmd
             | Download act -> 
                 match act with
                 | Download.Start -> 

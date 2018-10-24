@@ -16,7 +16,7 @@ module private Impl =
 
     let rec getService = function
         | Real   -> getRealService()
-        | Empty  -> { Mock.createEmptyService 0 with getUsbDrives = (Real |> getService).getUsbDrives }
+        | Empty  -> { Mock.createEmptyService 1000 with getUsbDrives = (Real |> getService).getUsbDrives }
         | Mock   -> Mock.createService 1000 3000L
         | Custom -> 
             let srv = Mock |> getService
@@ -36,8 +36,8 @@ let getProgram (form: WizardForm) =
     Program.mkProgram
         (Main.init srv)
         (Main.update srv)
-        (fun prev next msg -> 
-            let action = fun () -> Main.view form prev next msg
+        (fun prev next dispatch msg -> 
+            let action = fun () -> Main.view form prev next dispatch msg
             crossThreadControlInvoke form action)
     |> Program.withSubscription (subscription form)
     |> Program.withErrorHandler (fun (_, e) -> raise e)

@@ -38,7 +38,15 @@ type Withdraw = {
     thresholdPayout: string
 }
 
-type Show = ShowStep | ShowMessagePage of MessagePage
+type MsgBox = {
+    caption: string
+    text: string
+}
+
+type Show = 
+    | ShowStep 
+    | ShowMessagePage of MessagePage
+    | ShowMessageBox of MsgBox
 
 type UsbDrives = {
     list: (int * string) list
@@ -81,6 +89,10 @@ open SonmInstaller.Components
 open SonmInstaller.Components.Main
 open SonmInstaller.Tools
 
+type DlgRes = 
+    | Ok
+    | Cancel
+
 type Download = 
     | Start
     | Progress of int64 * int64 // bytes downloaded * total
@@ -106,6 +118,7 @@ type UsbDrivesMsg =
 type Msg =
     | BackBtn
     | NextBtn
+    | DialogResult of DlgRes
     | Download of Download
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
