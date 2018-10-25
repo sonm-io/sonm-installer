@@ -106,16 +106,17 @@ module Main =
                 mapMsg 
                 (mapRes: State * Result<'res,exn> -> State * Cmd<Msg>) 
                 = function
-                | Start -> 
+                | AsyncTask.Start -> 
                     getPending s serviceMethod (AsyncTask.Complete >> mapMsg)
-                | Complete res -> 
+                | AsyncTask.Complete res -> 
                     mapRes ({ s with isPending = false }, res)
 
         let startDownload (service: IService) dispatch =
-            let progressCb bytesDownloaded total = 
-                Download.Progress (bytesDownloaded, total) |> dispatch
+            let progressCb (bytesDownloaded: Int64) (total: Int64) = 
+                let percent = if bytesDownloaded = 0L then 0. else (float bytesDownloaded) / (float total) * 100.
+                ProgressTask.Progress percent |> dispatch
                 System.Console.WriteLine ("progressCb: {0}", bytesDownloaded)
-            let completeCb = Download.Complete >> dispatch 
+            let completeCb = ProgressTask.Complete >> dispatch 
             service.StartDownload
                 progressCb
                 completeCb
@@ -132,7 +133,7 @@ module Main =
                         match s.installationProgress with
                         | WaitForStart -> 
                             let ns = { s with installationProgress = Downloading }
-                            let cmd = Cmd.ofSub (fun d -> Download.Start |> Msg.Download |> d)
+                            let cmd = Cmd.ofSub (fun d -> ProgressTask.Start |> Msg.Download |> d)
                             ns, cmd
                         | _            -> s, Cmd.none
                     ns, cmd, Some Screen.S1DoYouHaveWallet
@@ -228,11 +229,11 @@ module Main =
                 { ns with show = ShowStep }, cmd
             | Download act -> 
                 match act with
-                | Download.Start -> 
+                | ProgressTask.Start -> 
                     let ns = { s with installationProgress = Downloading }
                     ns, Cmd.map Msg.Download (Cmd.ofSub (startDownload srv))
-                | Download.Progress (_, _) -> s, Cmd.none
-                | Download.Complete res -> { s with installationProgress = InstallationProgress.DownloadComplete res }, Cmd.none
+                | ProgressTask.Progress _ -> s, Cmd.none
+                | ProgressTask.Complete res -> { s with installationProgress = InstallationProgress.DownloadComplete res }, Cmd.none
             | HasWallet hasWallet -> { s with hasWallet = hasWallet }, Cmd.none
             | NewKeyMsg action -> 
                 let res = NewKeyPage.update s.newKeyState action

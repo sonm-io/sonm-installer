@@ -93,13 +93,13 @@ type DlgRes =
     | Ok
     | Cancel
 
-type Download = 
-    | Start
-    | Progress of int64 * int64 // bytes downloaded * total
-    | Complete of Result<unit, exn>
-
 type AsyncTask<'r> = 
     | Start 
+    | Complete of Result<'r, exn>
+
+type ProgressTask<'r> = 
+    | Start
+    | Progress of float // percent
     | Complete of Result<'r, exn>
 
 type ImportKey = 
@@ -119,7 +119,7 @@ type Msg =
     | BackBtn
     | NextBtn
     | DialogResult of DlgRes
-    | Download of Download
+    | Download of ProgressTask<unit>
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
     | GenerateKey of AsyncTask<string>

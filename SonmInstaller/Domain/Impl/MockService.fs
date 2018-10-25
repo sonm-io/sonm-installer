@@ -17,36 +17,38 @@ module private Impl =
         return res
     }
 
-    let immidiatelyDownload 
-        (progressCb: int64 -> int64 -> unit) 
-        (completeCb: Result<unit, exn> -> unit) =
-        printfn "Downloading progress"
-        progressCb 1L 1L
-        printfn "Downloading complete"
-        completeCb (Ok ())
+open Impl
 
-    let startDownload 
-        time         // ms
-        totalBytes
-        (progressCb: int64 -> int64 -> unit) 
-        (completeCb: Result<unit, exn> -> unit) =
+let immidiatelyDownload 
+    (progressCb: int64 -> int64 -> unit) 
+    (completeCb: Result<unit, exn> -> unit) =
+    printfn "Downloading progress"
+    progressCb 1L 1L
+    printfn "Downloading complete"
+    completeCb (Ok ())
+
+let download 
+    time         // ms
+    totalBytes
+    (progressCb: int64 -> int64 -> unit) 
+    (completeCb: Result<unit, exn> -> unit) =
         
-        let deltaTime = 100  // ms
-        let batch = totalBytes / (time / int64(deltaTime))
+    let deltaTime = 100  // ms
+    let batch = (float totalBytes) / ((float time) / (float deltaTime))
 
-        let rec loop progress =
-            Thread.Sleep deltaTime
-            progressCb progress totalBytes
-            if progress < totalBytes then
-                loop (progress + batch)
-            else 
-                completeCb (Ok ())
+    let rec loop progress =
+        Thread.Sleep deltaTime
+        progressCb progress totalBytes
+        if progress < totalBytes then
+            loop (progress + int64 batch)
+        else 
+            completeCb (Ok ())
 
-        Async.Start <| async {
-            loop 0L
-        } 
+    Async.Start <| async {
+        loop 0L
+    } 
         
-        Console.WriteLine("StartDownload")
+    Console.WriteLine("StartDownload")
 
 let createEmptyService asyncTasksWait = 
     let address = "0x689c56aef474df92d44a1b70850f808488f9769c"
@@ -55,17 +57,13 @@ let createEmptyService asyncTasksWait =
     {
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
-        startDownload     = Impl.immidiatelyDownload
+        startDownload     = immidiatelyDownload
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
         importKeyStore    = (fun _ _ -> wait ms "importKeyStore" address)
-        openKeyFolder     = Impl.debugWrite "openKeyFolder"
-        openKeyFile       = Impl.debugWrite "openKeyFile"
+        openKeyFolder     = debugWrite "openKeyFolder"
+        openKeyFile       = debugWrite "openKeyFile"
         callSmartContract = (fun _ _ -> wait ms "callSmartContract" ())
         makeUsbStick      = (fun _   -> wait ms "writeToUsbStick" ())
         closeApp          = id
     }
 
-let createService asyncTasksTime downloadTime  = 
-    { createEmptyService asyncTasksTime with
-        startDownload = Impl.startDownload downloadTime (600L * 1024L * 1024L)
-    }

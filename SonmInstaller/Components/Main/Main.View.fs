@@ -24,6 +24,8 @@ module Main =
         
             let reset (form: WizardForm) = 
                 update form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
+                form.progressBar.ProgressTotal <- 100.
+                form.progressBarBottom.ProgressTotal <- 100.
         
         let addDrives (form: WizardForm) (drivesList: (int * string) list) = 
             drivesList
@@ -135,18 +137,14 @@ module Main =
 
     module private Messaged = 
         
-        let downloadProgress (form: WizardForm) downloaded total = 
-            let d = (double downloaded) / 1024. / 1024.
-            let t = (double total) / 1024. / 1024.
-            form.progressBarBottom.ProgressTotal <- t
-            form.progressBar.ProgressTotal <- t
-            form.progressBarBottom.ProgressCurrent <- d
-            form.progressBar.ProgressCurrent <- d
+        let downloadProgress (form: WizardForm) percent = 
+            form.progressBarBottom.ProgressCurrent <- percent
+            form.progressBar.ProgressCurrent <- percent
 
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
         match msg with
-        | Msg.Download (Download.Progress (downloaded, total)) -> 
-            Messaged.downloadProgress form downloaded total
+        | Msg.Download (ProgressTask.Progress percent) -> 
+            Messaged.downloadProgress form percent
         | _ -> 
             Common.view form prev next d
 
