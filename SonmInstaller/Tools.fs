@@ -1,12 +1,15 @@
 ﻿module SonmInstaller.Tools
 
 open System
+open System.Reflection
 open System.IO
 
 type ListItem (value: int, text: string) =
     member val Value = value with get, set
     member val Text = text with get, set
     override x.ToString () = x.Text
+
+let getExePath () = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
 
 let homePath = 
     if Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX then
