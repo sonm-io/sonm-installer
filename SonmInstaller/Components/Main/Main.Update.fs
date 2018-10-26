@@ -14,14 +14,14 @@ module Main =
         abstract member GetUsbDrives: unit -> (int * string) list
         abstract member StartDownload: 
             progressCb: (int64 -> int64 -> unit) ->
-            completeCb: (Result<unit, exn> -> unit) ->  // ToDo: make it just exn option
+            completeCb: (Result<unit, exn> -> unit) ->  // ToDo: rewrite to Async
             unit
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
         abstract member ImportKeyStore   : path: string -> password: string -> Async<string>
         abstract member OpenKeyFolder : path: string -> unit
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
-        abstract member MakeUsbStick: drive: int -> Async<unit>
+        abstract member MakeUsbStick: drive: int -> progress: (int -> int -> unit) -> Async<unit>
         abstract member CloseApp: unit -> unit
 
     let init (srv: IService) () =
@@ -81,6 +81,7 @@ module Main =
                 , res
 
             let startAsync (msg: AsyncTask<'res> -> Msg) = Cmd.ofSub (fun d -> AsyncTask.Start |> msg |> d)
+            let startProgress (msg: ProgressTask<'res> -> Msg) = Cmd.ofSub (fun d -> ProgressTask.Start |> msg |> d)
 
             let getAsyncCmd (serviceMethod: unit -> Async<'res>) mapMsg = 
                 Cmd.ofAsync
@@ -110,6 +111,33 @@ module Main =
                     getPending s serviceMethod (AsyncTask.Complete >> mapMsg)
                 | AsyncTask.Complete res -> 
                     mapRes ({ s with isPending = false }, res)
+            
+            // ToDo: think of better name
+            let startAsyncTask (factory: Dispatch<'msg> -> Async<'r>) (success: 'r -> 'msg) (error: exn -> 'msg) = 
+                let sub dispatch = 
+                    let task = factory dispatch
+                    async {
+                        let! r = task |> Async.Catch
+                        match r with
+                        | Choice1Of2 r -> r |> success
+                        | Choice2Of2 err -> err |> error
+                        |> dispatch
+                    } 
+                    |> Async.Start
+                Cmd.ofSub sub
+
+            let processProgressTask 
+                (s: State) 
+                (factory: Dispatch<'msg> -> Async<'r>)
+                mapMsg 
+                (mapRes: State * Result<'res,exn> -> State * Cmd<'msg>) 
+                = function
+                | ProgressTask.Start -> 
+                    let startCmd = startAsyncTask factory (Result.Ok >> mapMsg) (Result.Error >> mapMsg)
+                    s, startCmd
+                | ProgressTask.Progress _   -> s, Cmd.none
+                | ProgressTask.Complete res -> 
+                    mapRes (s, res)           
 
         let startDownload (service: IService) dispatch =
             let progressCb (bytesDownloaded: Int64) (total: Int64) = 
@@ -120,6 +148,11 @@ module Main =
             service.StartDownload
                 progressCb
                 completeCb
+
+        let startMakingUsb s = 
+            let ns = { s with installationProgress = MakingUsb }
+            let cmd = AsyncHlp.startProgress MakeUsbStick
+            ns, cmd
 
         let nextBtn (srv: IService) (state: Main.State) (dialogRes: DlgRes option) = 
 
@@ -158,7 +191,13 @@ module Main =
                             caption = "Caution"
                             text = "All data from selected USB drive will be erased. Continue?" }
                         { s with show = ShowMessageBox box }, Cmd.none, None
-                    | Some DlgRes.Ok     -> s, (AsyncHlp.startAsync MakeUsbStick), None
+                    | Some DlgRes.Ok     -> 
+                        match s.installationProgress with
+                        | DownloadComplete _ -> 
+                            let (ns, cmd) = startMakingUsb s
+                            ns, cmd, Some Screen.S5Progress
+                        | Downloading -> goTo Screen.S5Progress
+                        | _ -> failwith "unexpected case"
                     | Some DlgRes.Cancel -> stay
                 | Screen.S5Progress
                 | Screen.S6Finish          -> 
@@ -233,7 +272,10 @@ module Main =
                     let ns = { s with installationProgress = Downloading }
                     ns, Cmd.map Msg.Download (Cmd.ofSub (startDownload srv))
                 | ProgressTask.Progress _ -> s, Cmd.none
-                | ProgressTask.Complete res -> { s with installationProgress = InstallationProgress.DownloadComplete res }, Cmd.none
+                | ProgressTask.Complete res -> 
+                    match s.CurrentScreen() with 
+                    | Screen.S5Progress -> startMakingUsb s
+                    | _ -> { s with installationProgress = InstallationProgress.DownloadComplete res }, Cmd.none
             | HasWallet hasWallet -> { s with hasWallet = hasWallet }, Cmd.none
             | NewKeyMsg action -> 
                 let res = NewKeyPage.update s.newKeyState action
@@ -293,12 +335,19 @@ module Main =
                     | SelectDrive drive -> { s.usbDrives with selectedDrive = drive }
                 { s with usbDrives = usbDrives }, Cmd.none 
             | MakeUsbStick task -> 
+                let factory dispatch = 
+                    let driveIndex = s.usbDrives.selectedDrive.Value |> fst
+                    let progress (processed: int) (total: int) = 
+                        (float processed) / (float total) * 100.
+                        |> ProgressTask.Progress |> MakeUsbStick |> dispatch
+                    srv.MakeUsbStick driveIndex progress
+                
                 task
-                |> AsyncHlp.processTask s
-                    (fun () -> srv.MakeUsbStick (s.usbDrives.selectedDrive.Value |> fst))
-                    MakeUsbStick
-                    (AsyncHlp.toScreen Screen.S6Finish "Error" 
-                    >> fun (s, _) -> s, Cmd.none)
+                |> AsyncHlp.processProgressTask s factory 
+                    (ProgressTask.Complete >> MakeUsbStick)
+                    (AsyncHlp.mapStateOk (fun s _ -> { s with installationProgress = Finish })
+                     >> AsyncHlp.toScreen Screen.S6Finish "Error" 
+                     >> fun (s, _) -> s, Cmd.none)
         
     open Impl
 

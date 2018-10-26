@@ -19,7 +19,10 @@ type Service =
         openKeyFolder: (*path*) string -> unit
         openKeyFile:   (*path*) string -> unit
         callSmartContract: string -> float -> Async<unit>
-        makeUsbStick: int -> Async<unit>
+        makeUsbStick: 
+            int ->                          // disk index 
+            (int -> int -> unit) ->         // progress callback: etries extarcted -> total entries.
+            Async<unit>
         closeApp: unit -> unit
     } 
     interface NewKeyPage.IService with
@@ -33,5 +36,5 @@ type Service =
         member x.OpenKeyFolder path = x.openKeyFolder path
         member x.OpenKeyFile path = x.openKeyFile path
         member x.CallSmartContract withdrawTo minPayout = x.callSmartContract withdrawTo minPayout
-        member x.MakeUsbStick drive = x.makeUsbStick drive
+        member x.MakeUsbStick drive progress = x.makeUsbStick drive progress
         member x.CloseApp () = x.closeApp ()

@@ -17,10 +17,13 @@ type Screen =
     
 type Step = Screen * int // screen * stepNum
 
+// ToDo: 
 type InstallationProgress =
     | WaitForStart
     | Downloading
     | DownloadComplete of Result<unit, exn>
+    | MakingUsb
+    | Finish
 
 type MessagePage = {
     header: string
@@ -99,7 +102,7 @@ type AsyncTask<'r> =
 
 type ProgressTask<'r> = 
     | Start
-    | Progress of float // percent
+    | Progress of float // percent ToDo: change percent to: (current: float) (total: float)
     | Complete of Result<'r, exn>
 
 type ImportKey = 
@@ -129,4 +132,4 @@ type Msg =
     | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
     | UsbDrives of UsbDrivesMsg
-    | MakeUsbStick of AsyncTask<unit>
+    | MakeUsbStick of ProgressTask<unit>

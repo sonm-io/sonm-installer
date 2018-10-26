@@ -23,9 +23,11 @@ module Main =
                 form.progressBarBottom.LabelTpl <- tpl
         
             let reset (form: WizardForm) = 
-                update form "Download in progress: {0:0.#} of {1:0.#} ({2:0}%)"
+                update form "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)"
                 form.progressBar.ProgressTotal <- 100.
+                form.progressBar.ProgressCurrent <- 0.
                 form.progressBarBottom.ProgressTotal <- 100.
+                form.progressBarBottom.ProgressCurrent <- 0.
         
         let addDrives (form: WizardForm) (drivesList: (int * string) list) = 
             drivesList
@@ -83,7 +85,7 @@ module Main =
                 | DialogResult.No  -> DlgRes.Cancel
                 | _ -> failwith "Unhandled result type"
                 |> Msg.DialogResult
-                |> d
+                |> d // ToDo: wait until download complete and then press any key. Expected result: dialog closed, Actual: dialog appears again.
 
         let view (form: WizardForm) (prev: Main.State option) (next: Main.State) d = 
             let doIf = doIfChanged prev next
@@ -103,6 +105,10 @@ module Main =
                 | Downloading -> 
                     DownloadProgressBar.reset form
                     form.pnlErrorDownload.Visible <- false
+                | MakingUsb -> 
+                    DownloadProgressBar.reset form
+                    form.pnlErrorDownload.Visible <- false // ToDo: copypast
+                    form.progressBar.LabelTpl <- "Copy file to USB: {0:0.0} of {1:0.0} ({2:0}%)"
                 | _ -> ()
             )
 
@@ -137,14 +143,16 @@ module Main =
 
     module private Messaged = 
         
-        let downloadProgress (form: WizardForm) percent = 
+        let progress (form: WizardForm) percent = 
             form.progressBarBottom.ProgressCurrent <- percent
             form.progressBar.ProgressCurrent <- percent
 
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
         match msg with
         | Msg.Download (ProgressTask.Progress percent) -> 
-            Messaged.downloadProgress form percent
+            Messaged.progress form percent
+        | Msg.MakeUsbStick (ProgressTask.Progress percent) -> 
+            Messaged.progress form percent // ToDo: can we merge two similar cases?
         | _ -> 
             Common.view form prev next d
 

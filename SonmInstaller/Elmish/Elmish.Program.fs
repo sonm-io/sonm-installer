@@ -89,6 +89,7 @@ module Program =
             let rec loop (state:'model) =
                 async {
                     let! msg = mb.Receive()
+                    //System.Diagnostics.Debug.WriteLine(msg)
                     let newState =
                         try
                             let (model', cmd') = program.update state msg

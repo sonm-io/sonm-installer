@@ -16,8 +16,9 @@ module private Impl =
 
     let customizeMock srv = 
         { srv with
-            startDownload = Mock.download 4000 (600L * 1024L * 1024L)
+            startDownload = Mock.download 20000 (600L * 1024L * 1024L)
             getUsbDrives = realService.getUsbDrives
+            makeUsbStick = Mock.makeUsbStick 10000 100
         }
 
     let customizeReal srv = 
@@ -30,14 +31,14 @@ module private Impl =
         { srv with closeApp = fun () -> crossThreadControlInvoke form action }
 
     let rec getService = function
-    | Mock   -> Mock.createEmptyService 1000 |> customizeMock
-    | Real   -> realService |> customizeReal
+    | Mock   -> Mock.createEmptyService 0 |> customizeMock
+    | Real   -> realService //|> customizeReal
 
 open Impl
 
 let getProgram (form: WizardForm) = 
     let srv = 
-        Mock 
+        Real 
         |> getService 
         |> withCloseApp form
     Program.mkProgram
@@ -49,5 +50,3 @@ let getProgram (form: WizardForm) =
     |> Program.withSubscription (subscription form)
     |> Program.withErrorHandler (fun (_, e) -> raise e)
 
-let x = Ok 1
-let y = Result.Error "wef"

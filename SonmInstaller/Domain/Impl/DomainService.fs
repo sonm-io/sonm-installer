@@ -15,6 +15,7 @@ module private Impl =
     let openKeyFolder path = path |> Path.GetDirectoryName |> startProc
 
 open Impl
+open UsbStickMaker
 
 type DomainService () = 
 
@@ -29,6 +30,8 @@ type DomainService () =
 
     let sonmOsImageDestination = 
         Path.Combine (appPath, Path.GetFileName sonmOsImageUrl)
+
+    let libPath = Path.Combine(getExePath (), "lib")
 
     let generateKeyStore path pass = async {
         let json = Blockchain.generateKeyStore account pass
@@ -50,6 +53,18 @@ type DomainService () =
         |> Seq.map (fun i -> i.Index, toStr i)
         |> Seq.sortBy fst
         |> List.ofSeq
+    
+    let makeUsbStick diskIndex progress = 
+        let cfg = {
+            zipPath = sonmOsImageDestination
+            toolsPath = libPath
+            usbDiskIndex = diskIndex
+            progress = progress
+            output = fun _ -> ()
+        }
+        async {
+            UsbStickMaker.makeUsbStick cfg
+        }
 
     do  
         ensureAppPathExists () 
@@ -64,4 +79,5 @@ type DomainService () =
             importKeyStore = importKeyStore
             openKeyFolder = openKeyFolder
             openKeyFile = startProc
+            makeUsbStick = makeUsbStick
         }
