@@ -56,6 +56,8 @@
     <Compile Include="Components\NewKeyPage\NewKeyPage.fs" />
     <Compile Include="Components\NewKeyPage\NewKeyPage.Update.fs" />
     <Compile Include="Components\NewKeyPage\NewKeyPage.View.fs" />
+    <Compile Include="Components\Progress\Progress.fs" />
+    <Compile Include="Components\Progress\Progress.View.fs" />
     <Compile Include="Components\Main\Main.fs" />
     <Compile Include="Components\Main\Main.Update.fs" />
     <Compile Include="Components\Main\Main.View.fs" />

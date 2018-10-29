@@ -65,7 +65,7 @@ namespace SonmInstaller.UI
             if (string.IsNullOrEmpty(LabelTpl) || ProgressTotal == 0)
                 return;
             double percentage = ProgressCurrent / ProgressTotal * 100;
-            progressBar1.Value = int.Parse(Math.Truncate(percentage).ToString());
+            ProgressBarInner.Value = int.Parse(Math.Truncate(percentage).ToString());
             lblProgress.Text = string.Format(_labelTpl, ProgressCurrent, ProgressTotal, percentage);
         }
     }

@@ -158,6 +158,7 @@
             this.progressBarBottom.ProgressTotal = 100D;
             this.progressBarBottom.Size = new System.Drawing.Size(375, 50);
             this.progressBarBottom.TabIndex = 1;
+            this.progressBarBottom.Visible = false;
             // 
             // btnNext
             // 

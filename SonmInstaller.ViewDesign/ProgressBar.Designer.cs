@@ -28,18 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.ProgressBarInner = new System.Windows.Forms.ProgressBar();
             this.lblProgress = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // progressBar1
+            // ProgressBarInner
             // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.ProgressBarInner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(0, 30);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(696, 12);
-            this.progressBar1.TabIndex = 0;
+            this.ProgressBarInner.Location = new System.Drawing.Point(0, 30);
+            this.ProgressBarInner.Name = "ProgressBarInner";
+            this.ProgressBarInner.Size = new System.Drawing.Size(696, 12);
+            this.ProgressBarInner.TabIndex = 0;
             // 
             // lblProgress
             // 
@@ -56,7 +56,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.lblProgress);
-            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.ProgressBarInner);
             this.Name = "ProgressBar";
             this.Size = new System.Drawing.Size(696, 45);
             this.ResumeLayout(false);
@@ -66,7 +66,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ProgressBar progressBar1;
+        public System.Windows.Forms.ProgressBar ProgressBarInner;
         private System.Windows.Forms.Label lblProgress;
     }
 }

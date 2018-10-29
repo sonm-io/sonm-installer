@@ -16,14 +16,15 @@ module private Impl =
 
     let customizeMock srv = 
         { srv with
-            startDownload = Mock.download 20000 (600L * 1024L * 1024L)
+            startDownload = Mock.download 15000 (600L * 1024L * 1024L)
             getUsbDrives = realService.getUsbDrives
-            makeUsbStick = Mock.makeUsbStick 10000 100
+            makeUsbStick = Mock.makeUsbStick 10000 32
         }
 
     let customizeReal srv = 
         { srv with
-            startDownload = Mock.download 4000 (600L * 1024L * 1024L)
+            startDownload = Mock.download 15000 (600L * 1024L * 1024L)
+            makeUsbStick = Mock.makeUsbStick 10000 32
         }
 
     let withCloseApp (form: WizardForm) srv = 

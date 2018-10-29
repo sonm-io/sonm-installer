@@ -17,18 +17,6 @@ module Main =
 
     module private Shared = 
         
-        module DownloadProgressBar = 
-            let update (form: WizardForm) tpl = 
-                form.progressBar.LabelTpl       <- tpl
-                form.progressBarBottom.LabelTpl <- tpl
-        
-            let reset (form: WizardForm) = 
-                update form "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)"
-                form.progressBar.ProgressTotal <- 100.
-                form.progressBar.ProgressCurrent <- 0.
-                form.progressBarBottom.ProgressTotal <- 100.
-                form.progressBarBottom.ProgressCurrent <- 0.
-        
         let addDrives (form: WizardForm) (drivesList: (int * string) list) = 
             drivesList
             |> List.map (fun (i, text) -> new ListItem(i, text))
@@ -40,7 +28,6 @@ module Main =
     module private Initial =
 
         let view (form: WizardForm) (state: Main.State) = 
-            DownloadProgressBar.reset form
             addDrives form state.usbDrives.list
             form.tbThresholdAmount.Text <- state.withdraw.thresholdPayout
         
@@ -49,20 +36,6 @@ module Main =
         open Main
 
         let totalSteps = 6
-
-        let downloadComplete (form: WizardForm) = function
-            | Result.Ok () -> 
-                form.pnlErrorDownload.Visible <- false
-                let text = "Download Complete"
-                form.progressBar.LabelTpl       <- text
-                form.progressBarBottom.LabelTpl <- text
-            | Error (e: exn) -> 
-                form.pnlErrorDownload.Visible <- true
-                let text = "Download Error"
-                form.progressBar.LabelTpl       <- text
-                form.progressBarBottom.LabelTpl <- text
-                form.lblDownloadError.Text <- Exn.getMessagesStack e
-                form.lblDownloadError.Visible <- true
 
         let updateStepNum (form: WizardForm) current total =
             let label = form.HeaderLabels.[form.tabs.SelectedIndex]
@@ -100,17 +73,11 @@ module Main =
                 form.saveNewKey.FileName         <- Path.GetFileName      keyPath
             )
 
-            doPropIf (fun s -> s.installationProgress) (function 
-                | InstallationProgress.DownloadComplete result -> downloadComplete form result
-                | Downloading -> 
-                    DownloadProgressBar.reset form
-                    form.pnlErrorDownload.Visible <- false
-                | MakingUsb -> 
-                    DownloadProgressBar.reset form
-                    form.pnlErrorDownload.Visible <- false // ToDo: copypast
-                    form.progressBar.LabelTpl <- "Copy file to USB: {0:0.0} of {1:0.0} ({2:0}%)"
-                | _ -> ()
-            )
+            //doPropIf (fun s -> s.installationProgress) (function 
+            //    | InstallationProgress.Downloading -> 
+            //        form.progressBarBottom.Visible <- true
+            //    | _ -> ()
+            //)
 
             doPropIf (fun s -> s.etherAddress) (function 
                 | Some addr -> addr
@@ -131,6 +98,13 @@ module Main =
                 | None -> form.cmbDisk.SelectedIndex <- -1
             )
 
+            // ToDo: think about function like doPropIf
+            if next.progress.IsSome then
+                Progress.view 
+                    form
+                    (if prev.IsNone then None else prev.Value.progress)
+                    next.progress.Value
+
             show form next d
 
             NewKeyPage.view form next.newKeyState
@@ -141,20 +115,19 @@ module Main =
                 && cs < Screen.S5Progress 
                 //&& [ InstallationProgress.Downloading ] |> List.contains next.InstallationProgress
 
-    module private Messaged = 
-        
-        let progress (form: WizardForm) percent = 
-            form.progressBarBottom.ProgressCurrent <- percent
-            form.progressBar.ProgressCurrent <- percent
-
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
+        let defaultRender () = Common.view form prev next d
         match msg with
-        | Msg.Download (ProgressTask.Progress percent) -> 
-            Messaged.progress form percent
-        | Msg.MakeUsbStick (ProgressTask.Progress percent) -> 
-            Messaged.progress form percent // ToDo: can we merge two similar cases?
-        | _ -> 
-            Common.view form prev next d
+        | Msg.Download p
+        | Msg.MakeUsbStick p -> 
+            match p with
+            | Progress.Msg.Start -> 
+                Progress.reset form
+                defaultRender()
+            | Progress.Msg.Progress (current, total) -> Progress.progress form (current, total)
+            | _ -> defaultRender()
+        | _ -> defaultRender()
+            
 
     let view (form: WizardForm) (prev: Main.State option) (next: Main.State) dispatch msg = 
         if Option.isNone prev then

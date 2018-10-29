@@ -102,7 +102,7 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     //#endregion
 
     //#region step5progress Preparing installation image
-    this.btnTryAgainProgress.Click.Add <| fun _ -> ProgressTask.Start |> Download |> d
+    //this.btnTryAgainProgress.Click.Add <| fun _ -> Msg.TryAgainProgress |> d
     //#endregion
 
     //#region step6 Finish

@@ -60,6 +60,7 @@ type State = {
     currentStep: Step
     stepsHistory: Step list
     show: Show
+    progress: Progress.State option
     installationProgress: InstallationProgress
     backButton: Button.State
     nextButton: Button.State
@@ -91,6 +92,7 @@ namespace SonmInstaller.Components.Main.Msg
 open SonmInstaller.Components
 open SonmInstaller.Components.Main
 open SonmInstaller.Tools
+open SonmInstaller.Components.Progress
 
 type DlgRes = 
     | Ok
@@ -98,11 +100,6 @@ type DlgRes =
 
 type AsyncTask<'r> = 
     | Start 
-    | Complete of Result<'r, exn>
-
-type ProgressTask<'r> = 
-    | Start
-    | Progress of float // percent ToDo: change percent to: (current: float) (total: float)
     | Complete of Result<'r, exn>
 
 type ImportKey = 
@@ -122,7 +119,7 @@ type Msg =
     | BackBtn
     | NextBtn
     | DialogResult of DlgRes
-    | Download of ProgressTask<unit>
+    | Download of Progress.Msg<unit>
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
     | GenerateKey of AsyncTask<string>
@@ -132,4 +129,4 @@ type Msg =
     | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
     | UsbDrives of UsbDrivesMsg
-    | MakeUsbStick of ProgressTask<unit>
+    | MakeUsbStick of Progress.Msg<unit>
