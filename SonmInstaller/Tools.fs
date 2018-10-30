@@ -3,6 +3,7 @@
 open System
 open System.Reflection
 open System.IO
+open System.Threading.Tasks
 
 type ListItem (value: int, text: string) =
     member val Value = value with get, set

@@ -9,6 +9,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SonmInstaller", "SonmInstal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDrivesManager", "UsbDrivesManager\UsbDrivesManager.csproj", "{7CAA526E-CC9D-435A-8286-F3F6265DE9BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SonmEther", "SonmEther\SonmEther.csproj", "{34C7CD79-A011-4671-855E-A190E8B9A18A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{7CAA526E-CC9D-435A-8286-F3F6265DE9BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CAA526E-CC9D-435A-8286-F3F6265DE9BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CAA526E-CC9D-435A-8286-F3F6265DE9BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34C7CD79-A011-4671-855E-A190E8B9A18A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C7CD79-A011-4671-855E-A190E8B9A18A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34C7CD79-A011-4671-855E-A190E8B9A18A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34C7CD79-A011-4671-855E-A190E8B9A18A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

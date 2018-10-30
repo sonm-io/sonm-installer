@@ -39,7 +39,7 @@ open Impl
 
 let getProgram (form: WizardForm) = 
     let srv = 
-        Real 
+        Mock 
         |> getService 
         |> withCloseApp form
     Program.mkProgram
