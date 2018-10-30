@@ -114,7 +114,7 @@ let copy targetPath source =
 let makeUsbStick (cfg: Config) = 
     let letter = getFstVolumeLetter cfg.usbDiskIndex
     makePartitions cfg.usbDiskIndex |> cfg.output
-    runCmd "label" (sprintf "%s SOSNA" letter) |> cfg.output
+    runCmd "label" (sprintf "%s SONM" letter) |> cfg.output
     runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a %s" letter) |> cfg.output
     extractZip cfg.progress cfg.zipPath letter
     [
