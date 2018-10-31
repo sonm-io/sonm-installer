@@ -109,13 +109,13 @@ let copy targetPath source =
     let target = Path.Combine (targetPath, file)
     File.Copy (source, target, true)
 
-
 type MakeUsbStickConfig = {
     zipPath: string
     toolsPath: string
     usbDiskIndex: int
     masterAddr: string
     adminKeyContent: string // content that will be saved to "admin" file
+    onStageChange: unit -> unit
     progress: int -> int -> unit
     output: string -> unit
 }
@@ -148,6 +148,7 @@ let makeUsbStick (cfg: MakeUsbStickConfig) =
     makePartitions cfg.usbDiskIndex |> cfg.output
     label()
     syslinux()
+    cfg.onStageChange ()
     //extractMin cfg.zipPath letter
     extractZip cfg.progress cfg.zipPath letter
     fixBoot()

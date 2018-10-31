@@ -37,6 +37,7 @@
             this.ProgressBarInner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ProgressBarInner.Location = new System.Drawing.Point(0, 30);
+            this.ProgressBarInner.MarqueeAnimationSpeed = 10;
             this.ProgressBarInner.Name = "ProgressBarInner";
             this.ProgressBarInner.Size = new System.Drawing.Size(696, 12);
             this.ProgressBarInner.TabIndex = 0;

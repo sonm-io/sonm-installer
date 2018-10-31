@@ -17,12 +17,13 @@ type Screen =
     
 type Step = Screen * int // screen * stepNum
 
-// ToDo: 
+type MakingUsbStages = Formatting | Extracting
+
 type InstallationProgress =
     | WaitForStart
     | Downloading
     | DownloadComplete of Result<unit, exn>
-    | MakingUsb
+    | MakingUsb of MakingUsbStages
     | Finish
 
 type MessagePage = {
@@ -119,6 +120,7 @@ type Msg =
     | BackBtn
     | NextBtn
     | DialogResult of DlgRes
+    | ChangeProgressState of Progress.State option
     | Download of Progress.Msg<unit>
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg

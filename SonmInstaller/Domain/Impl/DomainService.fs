@@ -55,7 +55,7 @@ type DomainService () =
         |> Seq.sortBy fst
         |> List.ofSeq
     
-    let makeUsbStick diskIndex progress = 
+    let makeUsbStick diskIndex onStageChange progress = 
         let getAdminKeyContent () = 
             [
                 admin.Address
@@ -68,6 +68,7 @@ type DomainService () =
             usbDiskIndex = diskIndex
             masterAddr = master.Address
             adminKeyContent = getAdminKeyContent ()
+            onStageChange = onStageChange
             progress = progress
             output = fun _ -> ()
         }

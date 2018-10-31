@@ -46,8 +46,12 @@ let download
         
     Console.WriteLine("StartDownload")
 
-let makeUsbStick time totalEntries _ (progress: int -> int -> unit) = async { //ToDo: simplify
-    let delta = (float time) / (float totalEntries) |> int
+let makeUsbStick formattingTime extractTime totalEntries _ 
+    (onStageChange: unit -> unit) 
+    (progress: int -> int -> unit) = async { //ToDo: simplify
+    do! Async.Sleep formattingTime
+    onStageChange()
+    let delta = (float extractTime) / (float totalEntries) |> int
     let rec loop processedEntries = async {
         do! Async.Sleep delta
         progress processedEntries totalEntries
@@ -70,7 +74,7 @@ let createEmptyService asyncTasksWait =
         openKeyFolder     = debugWrite "openKeyFolder"
         openKeyFile       = debugWrite "openKeyFile"
         callSmartContract = (fun _ _ -> wait ms "callSmartContract" ())
-        makeUsbStick      = makeUsbStick 1000 10
+        makeUsbStick      = makeUsbStick 1000 1000 10
         closeApp          = id
     }
 

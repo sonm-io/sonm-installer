@@ -19,12 +19,12 @@ module private Impl =
         { srv with
             startDownload = Mock.download 15000 (600L * 1024L * 1024L)
             getUsbDrives = realService.getUsbDrives
-            makeUsbStick = Mock.makeUsbStick 10000 32
+            makeUsbStick = Mock.makeUsbStick 3000 10000 32
         }
 
     let customizeReal srv = 
         { srv with
-            startDownload = Mock.download 5000 (600L * 1024L * 1024L)
+            startDownload = Mock.download 1000 (600L * 1024L * 1024L)
             callSmartContract = (fun _ _ -> Mock.waitReturn 100 "callSmartContract" ())
             //makeUsbStick = Mock.makeUsbStick 10000 32
         }
@@ -35,7 +35,7 @@ module private Impl =
 
     let rec getService = function
     | Mock   -> Mock.createEmptyService 0 |> customizeMock
-    | Real   -> realService |> customizeReal
+    | Real   -> realService //|> customizeReal
 
 open Impl
 

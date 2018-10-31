@@ -21,7 +21,7 @@ module Main =
         abstract member OpenKeyFolder : path: string -> unit
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
-        abstract member MakeUsbStick: drive: int -> progress: (int -> int -> unit) -> Async<unit>
+        abstract member MakeUsbStick: drive: int -> onStageChange: (unit -> unit) -> progress: (int -> int -> unit) -> Async<unit>
         abstract member CloseApp: unit -> unit
 
     let init (srv: IService) () =
@@ -157,12 +157,23 @@ module Main =
                     style = Progress.Continuous }
             }, Progress.start Download
 
+        let getMakingUsbProgressTpl = function
+            | Formatting -> 
+                {
+                    Progress.State.captionTpl = "1/2 Formatting USB"
+                    Progress.State.style = Progress.Marquee 
+                }
+            | Extracting -> 
+                {
+                    captionTpl = "2/2 Copy files to USB: {0:0} of {1:0} ({2:0}%)"
+                    style = Progress.Continuous 
+                }
+
         let startMakingUsb s = 
+            let stage = Formatting
             { s with 
-                installationProgress = MakingUsb 
-                progress = Some {
-                    captionTpl = "Copy files to USB: {0:0} of {1:0} ({2:0}%)"
-                    style = Progress.Continuous }
+                installationProgress = MakingUsb stage
+                progress = stage |> getMakingUsbProgressTpl |> Some
             }, Progress.start MakeUsbStick
 
         let nextBtn (srv: IService) (state: Main.State) (dialogRes: DlgRes option) = 
@@ -274,6 +285,7 @@ module Main =
             | DialogResult result -> 
                 let ns, cmd = nextBtn srv s (Some result)
                 { ns with show = ShowStep }, cmd
+            | ChangeProgressState p -> { s with progress = p }, Cmd.none
             | Download act -> 
                 match act with
                 | Progress.Msg.Start -> 
@@ -351,9 +363,21 @@ module Main =
             | MakeUsbStick task -> 
                 let factory dispatch = 
                     let driveIndex = s.usbDrives.selectedDrive.Value |> fst
+                    let onStageChange () = 
+                        let errMsg = "Unexpected installation stage"
+                        match s.installationProgress with
+                        | MakingUsb stage -> 
+                            match stage with
+                            | Formatting -> Extracting
+                            | Extracting -> failwith errMsg
+                        | _ -> failwith errMsg
+                        |> getMakingUsbProgressTpl
+                        |> Some
+                        |> ChangeProgressState 
+                        |> dispatch
                     let progress (processed: int) (total: int) = 
                         (float processed, float total) |> Progress.Msg.Progress |> MakeUsbStick |> dispatch
-                    srv.MakeUsbStick driveIndex progress
+                    srv.MakeUsbStick driveIndex onStageChange progress
 
                 task
                 |> AsyncHlp.processProgressTask s factory 
