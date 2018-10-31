@@ -9,6 +9,7 @@ type Service =
         getUtcFilePath: unit -> string
         
         // Main.IService
+        isProcessElevated: unit -> bool
         getUsbDrives: unit -> (int * string) list
         startDownload:  
             (int64 -> int64 -> unit) ->     // progressCb: bytesDownloaded -> total
@@ -30,6 +31,7 @@ type Service =
         member x.GetUtcFilePath () = x.getUtcFilePath ()
         
     interface Main.IService with
+        member x.IsProcessElevated () = x.isProcessElevated ()
         member x.GetUsbDrives () = x.getUsbDrives ()
         member x.StartDownload progressCb completeCb = x.startDownload progressCb completeCb
         member x.GenerateKeyStore path password = x.generateKeyStore path password

@@ -41,6 +41,7 @@
             this.linkWelcome = new System.Windows.Forms.LinkLabel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblHeader0 = new System.Windows.Forms.Label();
+            this.lblWelcomeError = new System.Windows.Forms.Label();
             this.step1choose = new System.Windows.Forms.TabPage();
             this.label11 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -217,6 +218,7 @@
             this.step0.Controls.Add(this.linkWelcome);
             this.step0.Controls.Add(this.pictureBox1);
             this.step0.Controls.Add(this.lblHeader0);
+            this.step0.Controls.Add(this.lblWelcomeError);
             this.step0.Location = new System.Drawing.Point(4, 46);
             this.step0.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.step0.Name = "step0";
@@ -259,6 +261,18 @@
             this.lblHeader0.TabIndex = 0;
             this.lblHeader0.Tag = "header";
             this.lblHeader0.Text = "Welcome to SONM Installer";
+            // 
+            // lblWelcomeError
+            // 
+            this.lblWelcomeError.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWelcomeError.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.lblWelcomeError.Location = new System.Drawing.Point(15, 193);
+            this.lblWelcomeError.Name = "lblWelcomeError";
+            this.lblWelcomeError.Size = new System.Drawing.Size(584, 112);
+            this.lblWelcomeError.TabIndex = 3;
+            this.lblWelcomeError.Text = "SONM Installer needs elevated rights to partition your USB drive. Please restart " +
+    "installer as Administrator.";
+            this.lblWelcomeError.Visible = false;
             // 
             // step1choose
             // 
@@ -1096,6 +1110,7 @@
         public System.Windows.Forms.Label lblMessagePageText;
         public System.Windows.Forms.Label lblMessagePageHeader;
         public System.Windows.Forms.OpenFileDialog openKeystore;
+        public System.Windows.Forms.Label lblWelcomeError;
     }
 }
 

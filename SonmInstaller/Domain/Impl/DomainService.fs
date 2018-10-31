@@ -4,8 +4,10 @@ open System
 open System.Diagnostics
 open System.IO
 open System.Configuration
+
 open SonmInstaller.Tools
 open UsbDrivesManager
+open SonmInstaller.Utils
 
 open Nethereum.Web3.Accounts
 
@@ -21,6 +23,7 @@ type DomainService () =
 
     let mutable master = Blockchain.genAccount ()
     let admin = Blockchain.genAccount ()
+    let isProcessElevated = UacHelper.IsProcessElevated
 
     let usbMan = new UsbManager()
 
@@ -90,7 +93,8 @@ type DomainService () =
         ensureAppPathExists () 
 
     member x.GetService () = 
-        { Mock.createEmptyService 3000 with
+        { 
+            isProcessElevated = (fun () -> isProcessElevated)
             getUtcFilePath = fun () -> 
                 Path.Combine (appPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
@@ -101,4 +105,5 @@ type DomainService () =
             openKeyFile = startProc
             callSmartContract = callSmartContract
             makeUsbStick = makeUsbStick
+            closeApp = id
         }

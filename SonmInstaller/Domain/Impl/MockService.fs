@@ -5,6 +5,7 @@ open System.IO
 open System.Threading
 open System.Diagnostics
 open SonmInstaller
+open SonmInstaller.Utils
 
 let debugWrite header message = Debug.WriteLine ("{0}: {1}", header, message)
 
@@ -66,6 +67,7 @@ let createEmptyService asyncTasksWait =
     let ms = asyncTasksWait
     let wait = waitReturn
     {
+        isProcessElevated = (fun () -> true)
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
         startDownload     = immidiatelyDownload

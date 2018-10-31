@@ -84,6 +84,11 @@
       <Project>{34c7cd79-a011-4671-855e-a190e8b9a18a}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\SonmInstaller.Utils\SonmInstaller.Utils.csproj">
+      <Name>SonmInstaller.Utils</Name>
+      <Project>{ddd5d907-9282-4103-b8ae-bb39b543e197}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\UsbDrivesManager\UsbDrivesManager.csproj">
       <Name>UsbDrivesManager</Name>
       <Project>{7caa526e-cc9d-435a-8286-f3f6265de9bb}</Project>

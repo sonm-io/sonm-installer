@@ -23,6 +23,10 @@ module Main =
             |> Array.ofList
             |> (fun dataSource -> form.cmbDisk.DataSource <- dataSource)
 
+        let updateWelcomeScreen (form: WizardForm) isOk = 
+            form.linkWelcome.Visible     <- isOk
+            form.lblWelcomeError.Visible <- not isOk
+
     open Shared
 
     module private Initial =
@@ -114,6 +118,9 @@ module Main =
                 cs > Screen.S0Welcome 
                 && cs < Screen.S5Progress 
                 //&& [ InstallationProgress.Downloading ] |> List.contains next.InstallationProgress
+
+            if next.CurrentScreen () = Screen.S0Welcome then
+                updateWelcomeScreen form next.isProcessElevated
 
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
         let defaultRender () = Common.view form prev next d

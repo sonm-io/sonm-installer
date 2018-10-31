@@ -11,6 +11,7 @@ module Main =
     
     type IService = 
         inherit NewKeyPage.IService
+        abstract member IsProcessElevated: unit -> bool
         abstract member GetUsbDrives: unit -> (int * string) list
         abstract member StartDownload: 
             progressCb: (int64 -> int64 -> unit) ->
@@ -23,33 +24,6 @@ module Main =
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
         abstract member MakeUsbStick: drive: int -> onStageChange: (unit -> unit) -> progress: (int -> int -> unit) -> Async<unit>
         abstract member CloseApp: unit -> unit
-
-    let init (srv: IService) () =
-        {
-            currentStep = Screen.S0Welcome, 0
-            stepsHistory = []
-            show = ShowStep
-            progress = None
-            installationProgress = InstallationProgress.WaitForStart
-            hasWallet = false
-            backButton = button.btnHidden
-            nextButton = button.btnBegin
-            newKeyState = NewKeyPage.init srv
-            existingKeystore = {
-                path = None
-                password = ""
-            }
-            isPending = false
-            etherAddress = None
-            withdraw = {
-                address = ""
-                thresholdPayout = "1000"
-            }
-            usbDrives = {
-                list = srv.GetUsbDrives()
-                selectedDrive = None
-            }
-        }, []
 
     module private Impl = 
     
@@ -247,6 +221,7 @@ module Main =
 
             let getNextBtn (s: State) = 
                 let isNextAllowedOnScreen = function
+                    | Screen.S0Welcome        -> s.isProcessElevated
                     | Screen.S2a1KeyGen       -> s.newKeyState.NextAllowed()
                     | Screen.S2b1SelectJson   -> s.existingKeystore.path.IsSome
                     | Screen.S2b2JsonPassword -> not <| String.IsNullOrEmpty(s.existingKeystore.password)
@@ -390,4 +365,33 @@ module Main =
 
     let update (service: IService) (state: Main.State) =
         computeNewState service state
-        >> withButtons 
+        >> withButtons
+
+    let init (srv: IService) () =
+        ({
+            currentStep = Screen.S0Welcome, 0
+            stepsHistory = []
+            show = ShowStep
+            backButton = button.btnBack
+            nextButton = button.btnNext
+            progress = None
+            installationProgress = InstallationProgress.WaitForStart
+            isProcessElevated = srv.IsProcessElevated ()
+            hasWallet = false
+            newKeyState = NewKeyPage.init srv
+            existingKeystore = {
+                path = None
+                password = ""
+            }
+            isPending = false
+            etherAddress = None
+            withdraw = {
+                address = ""
+                thresholdPayout = "1000"
+            }
+            usbDrives = {
+                list = srv.GetUsbDrives()
+                selectedDrive = None
+            }
+        }, Cmd.none)
+        |> withButtons

@@ -68,6 +68,7 @@ type State = {
     isPending: bool
     usbDrives: UsbDrives
     // progress:
+    isProcessElevated: bool
     hasWallet: bool
     newKeyState: NewKeyPage.State
     existingKeystore: ExistingKeystore
