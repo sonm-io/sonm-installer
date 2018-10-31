@@ -13,6 +13,7 @@ module private Impl =
     type ServiceType = Mock | Real
 
     let realService = (new DomainService()).GetService()
+    let mockService = (Mock.createEmptyService 0)
 
     let customizeMock srv = 
         { srv with
@@ -23,8 +24,9 @@ module private Impl =
 
     let customizeReal srv = 
         { srv with
-            startDownload = Mock.download 15000 (600L * 1024L * 1024L)
-            makeUsbStick = Mock.makeUsbStick 10000 32
+            startDownload = Mock.download 5000 (600L * 1024L * 1024L)
+            callSmartContract = (fun _ _ -> Mock.waitReturn 100 "callSmartContract" ())
+            //makeUsbStick = Mock.makeUsbStick 10000 32
         }
 
     let withCloseApp (form: WizardForm) srv = 
@@ -33,13 +35,13 @@ module private Impl =
 
     let rec getService = function
     | Mock   -> Mock.createEmptyService 0 |> customizeMock
-    | Real   -> realService //|> customizeReal
+    | Real   -> realService |> customizeReal
 
 open Impl
 
 let getProgram (form: WizardForm) = 
     let srv = 
-        Mock 
+        Real 
         |> getService 
         |> withCloseApp form
     Program.mkProgram

@@ -87,13 +87,11 @@ module Impl =
 
 open Impl
 
-type Config = {
-    zipPath: string
-    toolsPath: string
-    usbDiskIndex: int
-    progress: int -> int -> unit
-    output: string -> unit
-}
+let extractMin 
+    (zipPath: string) 
+    (targetPath: string) =
+    use zip = ZipFile.Read(zipPath)
+    zip.SelectEntries("name=sonm.txt", @"\") |> Seq.iter (fun i -> i.Extract (targetPath, ExtractExistingFileAction.OverwriteSilently))
 
 let extractZip 
     (progress: int -> int -> unit) // entries extracted -> total entries
@@ -111,16 +109,47 @@ let copy targetPath source =
     let target = Path.Combine (targetPath, file)
     File.Copy (source, target, true)
 
-let makeUsbStick (cfg: Config) = 
+
+type MakeUsbStickConfig = {
+    zipPath: string
+    toolsPath: string
+    usbDiskIndex: int
+    masterAddr: string
+    adminKeyContent: string // content that will be saved to "admin" file
+    progress: int -> int -> unit
+    output: string -> unit
+}
+
+let saveMasterAddr (master: string) (usbLetter: string) =
+    let fileName = usbLetter |> sprintf @"%s\sonm.txt"
+    let lines = fileName |> File.ReadAllLines
+    let index = lines |> Array.findIndex (fun i -> i.StartsWith "MASTER_ADDR=")
+    lines.[index] <- lines.[index] + master    
+    File.WriteAllLines (fileName, lines)
+
+let saveAdminKey (adminKeyContent: string) (usbLetter: string) =
+    File.WriteAllText (sprintf @"%s\admin" usbLetter, adminKeyContent)
+
+let makeUsbStick (cfg: MakeUsbStickConfig) = 
     let letter = getFstVolumeLetter cfg.usbDiskIndex
+    // tasks:
+    let label     () = runCmd "label" (sprintf "%s SONM" letter) |> cfg.output
+    let syslinux  () = runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a %s" letter) |> cfg.output
+    let fixBoot   () = 
+        [
+            @"\boot\libcom32.c32"
+            @"\boot\libutil.c32"
+            @"\boot\vesamenu.c32"
+        ]
+        |> List.map (fun i -> letter + i)
+        |> List.iter (copy letter)
+    
+    // run tasks:
     makePartitions cfg.usbDiskIndex |> cfg.output
-    runCmd "label" (sprintf "%s SONM" letter) |> cfg.output
-    runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a %s" letter) |> cfg.output
+    label()
+    syslinux()
+    //extractMin cfg.zipPath letter
     extractZip cfg.progress cfg.zipPath letter
-    [
-        @"\boot\libcom32.c32"
-        @"\boot\libutil.c32"
-        @"\boot\vesamenu.c32"
-    ]
-    |> List.map (fun i -> letter + i)
-    |> List.iter (copy letter)
+    fixBoot()
+    saveMasterAddr cfg.masterAddr letter
+    saveAdminKey cfg.adminKeyContent letter

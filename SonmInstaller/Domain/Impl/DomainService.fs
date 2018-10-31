@@ -19,7 +19,8 @@ open UsbStickMaker
 
 type DomainService () = 
 
-    let mutable account = Blockchain.genAccount ()
+    let mutable master = Blockchain.genAccount ()
+    let admin = Blockchain.genAccount ()
 
     let usbMan = new UsbManager()
 
@@ -34,15 +35,15 @@ type DomainService () =
     let libPath = Path.Combine(getExePath (), "lib")
 
     let generateKeyStore path pass = async {
-        let json = Blockchain.generateKeyStore account pass
+        let json = Blockchain.generateKeyStore master pass
         File.WriteAllText (path, json)
-        return account.Address
+        return master.Address
     }
 
     let importKeyStore path pass = async {
         let json = File.ReadAllText path
-        account <- Account.LoadFromKeyStore(json, pass)
-        return account.Address
+        master <- Account.LoadFromKeyStore(json, pass)
+        return master.Address
     }
 
     let getUsbDrives () = 
@@ -55,10 +56,18 @@ type DomainService () =
         |> List.ofSeq
     
     let makeUsbStick diskIndex progress = 
+        let getAdminKeyContent () = 
+            [
+                admin.Address
+                admin.PrivateKey
+            ] |> String.concat "\n"
+        
         let cfg = {
             zipPath = sonmOsImageDestination
             toolsPath = libPath
             usbDiskIndex = diskIndex
+            masterAddr = master.Address
+            adminKeyContent = getAdminKeyContent ()
             progress = progress
             output = fun _ -> ()
         }
@@ -66,18 +75,29 @@ type DomainService () =
             UsbStickMaker.makeUsbStick cfg
         }
 
+    let callSmartContract (withdrawTo: string) (minPayout: float) = async {
+        do! {
+                Blockchain.blockChainUrl = getAppSetting "BlockChainUrl"
+                Blockchain.smartContractAddress = getAppSetting "RegisterAdminScAddr"
+                Blockchain.account = master
+                Blockchain.adminAddr = admin.Address
+            } 
+            |> Blockchain.registerAdmin
+    }
+
     do  
         ensureAppPathExists () 
 
     member x.GetService () = 
         { Mock.createEmptyService 3000 with
             getUtcFilePath = fun () -> 
-                Path.Combine (appPath, (Blockchain.getUtcFileName account.Address) + ".json")
+                Path.Combine (appPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
             startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
             generateKeyStore = generateKeyStore
             importKeyStore = importKeyStore
             openKeyFolder = openKeyFolder
             openKeyFile = startProc
+            callSmartContract = callSmartContract
             makeUsbStick = makeUsbStick
         }

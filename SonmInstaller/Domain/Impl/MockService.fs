@@ -6,18 +6,14 @@ open System.Threading
 open System.Diagnostics
 open SonmInstaller
 
-module private Impl =
+let debugWrite header message = Debug.WriteLine ("{0}: {1}", header, message)
 
-    let debugWrite header message = Debug.WriteLine ("{0}: {1}", header, message)
-
-    let waitReturn ms msg res = async {
-        printfn "%s: Begin" msg
-        do! Async.Sleep ms
-        printfn "%s: End" msg
-        return res
-    }
-
-open Impl
+let waitReturn ms msg res = async {
+    printfn "%s: Begin" msg
+    do! Async.Sleep ms
+    printfn "%s: End" msg
+    return res
+}
 
 let immidiatelyDownload 
     (progressCb: int64 -> int64 -> unit) 
@@ -64,7 +60,7 @@ let makeUsbStick time totalEntries _ (progress: int -> int -> unit) = async { //
 let createEmptyService asyncTasksWait = 
     let address = "0x689c56aef474df92d44a1b70850f808488f9769c"
     let ms = asyncTasksWait
-    let wait = Impl.waitReturn
+    let wait = waitReturn
     {
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
