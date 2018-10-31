@@ -338,10 +338,10 @@
             this.lblHeader1.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblHeader1.Location = new System.Drawing.Point(9, 16);
             this.lblHeader1.Name = "lblHeader1";
-            this.lblHeader1.Size = new System.Drawing.Size(524, 31);
+            this.lblHeader1.Size = new System.Drawing.Size(539, 31);
             this.lblHeader1.TabIndex = 1;
             this.lblHeader1.Tag = "header";
-            this.lblHeader1.Text = "Step {0} of {1}. Have you ever use SONM?";
+            this.lblHeader1.Text = "Step {0} of {1}. Have you ever used SONM?";
             // 
             // step2a1
             // 
