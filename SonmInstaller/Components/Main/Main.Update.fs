@@ -115,7 +115,12 @@ module Main =
 
         let startDownloadTask (service: IService) dispatch =
             let progressCb (bytesDownloaded: Int64) (total: Int64) = 
-                ((float bytesDownloaded) / 1024. / 1024., (float total) / 1024. / 1024.) 
+                {
+                    Progress.State.captionTpl = "Downloading: {0:0.0} of {1:0.0} ({2:0}%)"
+                    Progress.State.style = Progress.ProgressStyle.Continuous
+                    Progress.State.current = (float bytesDownloaded) / 1024. / 1024.
+                    Progress.State.total = (float total) / 1024. / 1024.
+                }
                 |> Progress.Msg.Progress |> dispatch
                 System.Console.WriteLine ("progressCb: {0}", bytesDownloaded)
             let completeCb = Progress.Msg.Complete >> dispatch 
@@ -128,19 +133,26 @@ module Main =
                 installationProgress = Downloading 
                 progress = Some {
                     captionTpl = "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)"
-                    style = Progress.Continuous }
+                    style = Progress.Continuous 
+                    current = 0.0
+                    total = 0.0
+                }
             }, Progress.start Download
 
-        let getMakingUsbProgressTpl = function
+        let getMakingUsbProgressTpl: MakingUsbStages -> Progress.State = function
             | Formatting -> 
                 {
-                    Progress.State.captionTpl = "1/2 Formatting USB"
-                    Progress.State.style = Progress.Marquee 
+                    captionTpl = "1/2 Formatting USB"
+                    style = Progress.Marquee
+                    current = 0.0
+                    total = 0.0
                 }
             | Extracting -> 
                 {
                     captionTpl = "2/2 Copy files to USB: {0:0} of {1:0} ({2:0}%)"
-                    style = Progress.Continuous 
+                    style = Progress.Continuous
+                    current = 0.0
+                    total = 0.0
                 }
 
         let startMakingUsb s = 
@@ -266,7 +278,7 @@ module Main =
                 | Progress.Msg.Start -> 
                     let ns = { s with installationProgress = Downloading }
                     ns, Cmd.map Msg.Download (Cmd.ofSub (startDownloadTask srv))
-                | Progress.Msg.Progress _ -> s, Cmd.none
+                | Progress.Msg.Progress p ->  { s with progress = Some p }, Cmd.none
                 | Progress.Msg.Complete res -> 
                     let label = res |> function Result.Ok () -> "Download complete" | Error _ -> "Download error"
                     let progress = 
@@ -347,11 +359,17 @@ module Main =
                             | Extracting -> failwith errMsg
                         | _ -> failwith errMsg
                         |> getMakingUsbProgressTpl
-                        |> Some
-                        |> ChangeProgressState 
+                        |> Progress.Msg.Progress
+                        |> MakeUsbStick 
                         |> dispatch
                     let progress (processed: int) (total: int) = 
-                        (float processed, float total) |> Progress.Msg.Progress |> MakeUsbStick |> dispatch
+                        {
+                            Progress.State.captionTpl = "Making USB Drive"
+                            Progress.State.style = Progress.ProgressStyle.Continuous
+                            Progress.State.current = float processed
+                            Progress.State.total = float total
+
+                        } |> Progress.Msg.Progress |> MakeUsbStick |> dispatch
                     srv.MakeUsbStick driveIndex onStageChange progress
 
                 task

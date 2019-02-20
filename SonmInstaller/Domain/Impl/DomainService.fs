@@ -30,10 +30,10 @@ type DomainService () =
     let getAppSetting (key: string) = 
         ConfigurationManager.AppSettings.[key];
     
-    let sonmOsImageUrl = getAppSetting "SonmOsImageUrl"
+    let sonmOsMetadataUrl = getAppSetting "SonmReleaseMetadataUrl"
 
     let sonmOsImageDestination = 
-        Path.Combine (appPath, Path.GetFileName sonmOsImageUrl)
+        Path.Combine (appPath, Path.GetFileName sonmOsMetadataUrl)
 
     let libPath = Path.Combine(getExePath (), "lib")
 
@@ -98,7 +98,7 @@ type DomainService () =
             getUtcFilePath = fun () -> 
                 Path.Combine (appPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
-            startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
+            startDownload = Download.startDownload sonmOsMetadataUrl sonmOsImageDestination
             generateKeyStore = generateKeyStore
             importKeyStore = importKeyStore
             openKeyFolder = openKeyFolder

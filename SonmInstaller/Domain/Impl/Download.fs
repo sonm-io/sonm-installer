@@ -1,5 +1,6 @@
 ﻿module SonmInstaller.Domain.Download
 
+open Newtonsoft.Json
 open System
 open System.IO
 open System.Net
@@ -9,8 +10,10 @@ let startDownload (url: string) (destinationPath: string) (progressCb: int64 -> 
     let client = new WebClient();
     client.DownloadProgressChanged.Add <| fun e -> 
         progressCb e.BytesReceived e.TotalBytesToReceive
-    client.DownloadFileCompleted.Add <| fun e -> 
+    client.DownloadDataCompleted.Add <| fun e -> 
         let r = if e.Error = null then Ok () else Error e.Error
         completeCb r
-    client.DownloadFileAsync(uri, destinationPath);
+    client.DownloadDataAsync(uri);
 
+let parseMetadata(bytes: byte[]) =
+    JsonConvert.DeserializeObject(System.Text.Encoding.ASCII.GetString bytes)

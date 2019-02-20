@@ -22,9 +22,9 @@ module Progress =
                 | Continuous -> ProgressBarStyle.Continuous
                 | Marquee    -> ProgressBarStyle.Marquee
         
-        let progress (current: float, total: float) (pb: UI.ProgressBar) = 
-            pb.ProgressTotal   <- total
-            pb.ProgressCurrent <- current
+        let updateCurrent current (bp: UI.ProgressBar) = bp.ProgressCurrent <- current
+
+        let updateTotal total (bp: UI.ProgressBar) = bp.ProgressTotal <- total
 
         let getBars (form: WizardForm) = 
             [   
@@ -39,6 +39,5 @@ module Progress =
         let bars = Impl.getBars form
         doPropIf (fun s -> s.captionTpl) (fun v -> bars |> List.iter (Impl.updateLabel v))
         doPropIf (fun s -> s.style) (fun v -> bars |> List.iter (Impl.updateStyle v))
-    
-    let progress (form: WizardForm) (current: float, total: float) = 
-        Impl.getBars form |> List.iter (Impl.progress (current, total))
+        doPropIf (fun s -> s.current) (fun v -> bars |> List.iter (Impl.updateCurrent v))
+        doPropIf (fun s -> s.total) (fun v -> bars |> List.iter (Impl.updateTotal v))

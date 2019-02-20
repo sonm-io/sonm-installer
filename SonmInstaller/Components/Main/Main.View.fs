@@ -131,7 +131,12 @@ module Main =
             | Progress.Msg.Start -> 
                 Progress.reset form
                 defaultRender()
-            | Progress.Msg.Progress (current, total) -> Progress.progress form (current, total)
+            | Progress.Msg.Progress state -> 
+                //Progress.view form (Option.bind (fun s -> s.progress) prev) state
+                {next with
+                    progress = Some state
+                } |> ignore
+                defaultRender()
             | _ -> defaultRender()
         | _ -> defaultRender()
             
