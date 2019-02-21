@@ -71,6 +71,7 @@ let createEmptyService asyncTasksWait =
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
         startDownload     = immidiatelyDownload
+        downloadMetadata  = (fun _ -> wait ms "downloadMetadata" {Channel = "internal"; SonmOS = None})
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
         importKeyStore    = (fun _ _ -> wait ms "importKeyStore" address)
         openKeyFolder     = debugWrite "openKeyFolder"

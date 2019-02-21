@@ -52,6 +52,7 @@
     <Compile Include="Elmish\Elmish.Winforms.fs" />
     <Compile Include="Tools.fs" />
     <Compile Include="WizardForm.fs" />
+    <Compile Include="ReleaseMetadata.fs" />
     <Compile Include="Components\Button\Button.fs" />
     <Compile Include="Components\Button\Button.View.fs" />
     <Compile Include="Components\NewKeyPage\NewKeyPage.fs" />

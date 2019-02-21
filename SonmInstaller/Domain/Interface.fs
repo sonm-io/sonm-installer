@@ -1,6 +1,7 @@
 ﻿namespace SonmInstaller.Domain
 
 open SonmInstaller
+open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Components
 
 type Service = 
@@ -15,6 +16,7 @@ type Service =
             (int64 -> int64 -> unit) ->     // progressCb: bytesDownloaded -> total
             (Result<unit, exn> -> unit) ->  // completeCb
             unit
+        downloadMetadata: (Progress.State -> unit) -> Async<ChannelMetadata>
         generateKeyStore: string -> string -> Async<string> // path -> password -> address
         importKeyStore  : string -> string -> Async<string>
         openKeyFolder: (*path*) string -> unit
@@ -34,6 +36,7 @@ type Service =
         member x.IsProcessElevated () = x.isProcessElevated ()
         member x.GetUsbDrives () = x.getUsbDrives ()
         member x.StartDownload progressCb completeCb = x.startDownload progressCb completeCb
+        member x.DownloadMetadata progress = x.downloadMetadata progress
         member x.GenerateKeyStore path password = x.generateKeyStore path password
         member x.ImportKeyStore   path password = x.importKeyStore path password
         member x.OpenKeyFolder path = x.openKeyFolder path

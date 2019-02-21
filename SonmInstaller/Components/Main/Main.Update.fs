@@ -8,6 +8,7 @@ open SonmInstaller.Components.Main
 open SonmInstaller.Components.Main.Msg
 
 module Main = 
+    open SonmInstaller.ReleaseMetadata
     
     type IService = 
         inherit NewKeyPage.IService
@@ -17,6 +18,7 @@ module Main =
             progressCb: (int64 -> int64 -> unit) ->
             completeCb: (Result<unit, exn> -> unit) ->  // ToDo: rewrite to Async
             unit
+        abstract member DownloadMetadata : progress: (Progress.State -> unit) -> Async<ChannelMetadata>
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
         abstract member ImportKeyStore   : path: string -> password: string -> Async<string>
         abstract member OpenKeyFolder : path: string -> unit
@@ -172,7 +174,9 @@ module Main =
                 | Screen.S0Welcome         -> 
                     let ns, cmd = 
                         match s.installationProgress with
-                        | WaitForStart -> startDownload s
+                        | WaitForStart -> 
+                            {s with installationProgress = Downloading },
+                            Progress.start DownloadMetadata
                         | _            -> s, Cmd.none
                     ns, cmd, Some Screen.S1DoYouHaveWallet
                 | Screen.S1DoYouHaveWallet -> 
@@ -273,6 +277,30 @@ module Main =
                 let ns, cmd = nextBtn srv s (Some result)
                 { ns with show = ShowStep }, cmd
             | ChangeProgressState p -> { s with progress = p }, Cmd.none
+            | DownloadMetadata task ->
+                match task with
+                | Progress.Msg.Complete res ->
+                    match res with
+                    | Result.Ok cm -> {s with channelMetadata = Some cm }, Cmd.none
+                    | Error exn -> 
+                        ExnHlp.showExn 
+                            false 
+                            "There are error occured during downloading release information" 
+                            s 
+                            exn
+                        , Cmd.none
+                | Progress.Msg.Progress _ -> s, Cmd.none
+                | Progress.Msg.Start -> 
+                    let factory dispatch =
+                        let progress ps = 
+                            ps |> Some |> ChangeProgressState |> dispatch
+                        srv.DownloadMetadata progress
+                    task
+                    |> AsyncHlp.processProgressTask s factory 
+                        (Progress.Msg.Complete >> DownloadMetadata)
+                        (AsyncHlp.mapStateOk (fun s _ -> { s with installationProgress = Finish })
+                         >> AsyncHlp.toScreen Screen.S6Finish "Error" 
+                         >> fun (s, _) -> s, Cmd.none)
             | Download act -> 
                 match act with
                 | Progress.Msg.Start -> 
@@ -394,6 +422,7 @@ module Main =
             nextButton = button.btnNext
             progress = None
             installationProgress = InstallationProgress.WaitForStart
+            channelMetadata = None
             isProcessElevated = srv.IsProcessElevated ()
             hasWallet = false
             newKeyState = NewKeyPage.init srv
