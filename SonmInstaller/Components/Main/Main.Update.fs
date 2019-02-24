@@ -19,6 +19,7 @@ module Main =
             completeCb: (Result<unit, exn> -> unit) ->  // ToDo: rewrite to Async
             unit
         abstract member DownloadMetadata : progress: (Progress.State -> unit) -> Async<ChannelMetadata>
+        abstract member DownloadRelease : arg: Release -> progress: (Progress.State -> unit) -> Async<ChannelMetadata>
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
         abstract member ImportKeyStore   : path: string -> password: string -> Async<string>
         abstract member OpenKeyFolder : path: string -> unit
@@ -104,12 +105,12 @@ module Main =
 
             let processProgressTask 
                 (s: State) 
-                (factory: Dispatch<'msg> -> Async<'r>)
+                (factory: 'arg -> Dispatch<'msg> -> Async<'r>)
                 (mapMsg: Result<'r, exn> -> 'msg)
                 (mapRes: State * Result<'r,exn> -> State * Cmd<'msg>) 
                 = function
-                | Progress.Msg.Start _ -> 
-                    let startCmd = startAsyncTask factory (Result.Ok >> mapMsg) (Result.Error >> mapMsg)
+                | Progress.Msg.Start arg -> 
+                    let startCmd = startAsyncTask (factory arg) (Result.Ok >> mapMsg) (Result.Error >> mapMsg)
                     s, startCmd
                 | Progress.Msg.Progress _   -> s, Cmd.none
                 | Progress.Msg.Complete res -> 
@@ -139,7 +140,7 @@ module Main =
                     current = 0.0
                     total = 0.0
                 }
-            }, Progress.start Download
+            }, Progress.start Download ()
 
         let getMakingUsbProgressTpl: MakingUsbStages -> Progress.State = function
             | Formatting -> 
@@ -162,7 +163,7 @@ module Main =
             { s with 
                 installationProgress = MakingUsb stage
                 progress = stage |> getMakingUsbProgressTpl |> Some
-            }, Progress.start MakeUsbStick
+            }, Progress.start MakeUsbStick ()
 
         let nextBtn (srv: IService) (state: Main.State) (dialogRes: DlgRes option) = 
 
@@ -175,8 +176,8 @@ module Main =
                     let ns, cmd = 
                         match s.installationProgress with
                         | WaitForStart -> 
-                            {s with installationProgress = Downloading },
-                            Progress.start DownloadMetadata
+                            {s with installationProgress = MetadataDownloading },
+                            Progress.start DownloadMetadata ()
                         | _            -> s, Cmd.none
                     ns, cmd, Some Screen.S1DoYouHaveWallet
                 | Screen.S1DoYouHaveWallet -> 
@@ -278,32 +279,48 @@ module Main =
                 { ns with show = ShowStep }, cmd
             | ChangeProgressState p -> { s with progress = p }, Cmd.none
             | DownloadMetadata task ->
-                match task with
-                | Progress.Msg.Complete res ->
-                    match res with
-                    | Result.Ok cm -> {s with channelMetadata = Some cm }, Cmd.none
+                let completion (s, res) =
+                    match res with 
+                    | Result.Ok cm -> {s with channelMetadata = Some cm }, Progress.Msg.Start cm.SonmOS.Latest |> DownloadRelease |> Cmd.ofMsg
                     | Error exn -> 
                         ExnHlp.showExn 
                             false 
-                            "There are error occured during downloading release information" 
+                            "Download error" 
                             s 
                             exn
                         , Cmd.none
-                | Progress.Msg.Progress _ -> s, Cmd.none
-                | Progress.Msg.Start -> 
-                    let factory dispatch =
-                        let progress ps = 
-                            ps |> Some |> ChangeProgressState |> dispatch
-                        srv.DownloadMetadata progress
-                    task
-                    |> AsyncHlp.processProgressTask s factory 
-                        (Progress.Msg.Complete >> DownloadMetadata)
-                        (AsyncHlp.mapStateOk (fun s _ -> { s with installationProgress = Finish })
-                         >> AsyncHlp.toScreen Screen.S6Finish "Error" 
-                         >> fun (s, _) -> s, Cmd.none)
+                let factory arg dispatch =
+                    let progress ps = 
+                        ps |> Some |> ChangeProgressState |> dispatch
+                    srv.DownloadMetadata progress
+                task
+                |> AsyncHlp.processProgressTask s factory 
+                    (Progress.Msg.Complete >> DownloadMetadata)
+                    (AsyncHlp.mapStateOk (fun s res -> { s with installationProgress = MetadataDownloadCompelete  })
+                        >> completion)
+            | DownloadRelease task  ->
+                let factory arg dispatch =
+                    let progress ps = 
+                        ps |> Some |> ChangeProgressState |> dispatch
+                    srv.DownloadRelease arg progress
+                let completion (s, res) =
+                    match res with 
+                    | Result.Ok cm -> s, Progress.Msg.Start cm.SonmOS.Latest |> DownloadRelease |> Cmd.ofMsg
+                    | Error exn -> 
+                        ExnHlp.showExn 
+                            false 
+                            "Download error" 
+                            s 
+                            exn
+                        , Cmd.none
+                task
+                |> AsyncHlp.processProgressTask s factory
+                    (Progress.Msg.Complete >> DownloadRelease)
+                    (AsyncHlp.mapStateOk (fun s res -> { s with installationProgress = ReleaseDownloadComplete  })
+                        >> completion)
             | Download act -> 
                 match act with
-                | Progress.Msg.Start -> 
+                | Progress.Msg.Start _ -> 
                     let ns = { s with installationProgress = Downloading }
                     ns, Cmd.map Msg.Download (Cmd.ofSub (startDownloadTask srv))
                 | Progress.Msg.Progress p ->  { s with progress = Some p }, Cmd.none
@@ -316,7 +333,7 @@ module Main =
                     let ns = { s with progress = Some progress }
                     match s.CurrentScreen() with 
                     | Screen.S5Progress -> startMakingUsb ns
-                    | _ -> { ns with installationProgress = InstallationProgress.DownloadComplete res }, Cmd.none
+                    | _ -> { ns with installationProgress = DownloadComplete res }, Cmd.none
             | HasWallet hasWallet -> { s with hasWallet = hasWallet }, Cmd.none
             | NewKeyMsg action -> 
                 let res = NewKeyPage.update s.newKeyState action
@@ -376,7 +393,7 @@ module Main =
                     | SelectDrive drive -> { s.usbDrives with selectedDrive = drive }
                 { s with usbDrives = usbDrives }, Cmd.none 
             | MakeUsbStick task -> 
-                let factory dispatch = 
+                let factory arg dispatch = 
                     let driveIndex = s.usbDrives.selectedDrive.Value |> fst
                     let onStageChange () = 
                         let errMsg = "Unexpected installation stage"

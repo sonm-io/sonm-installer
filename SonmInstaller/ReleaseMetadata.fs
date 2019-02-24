@@ -39,13 +39,15 @@ type Release = {
 }
 
 type SonmOsMetadata = {
+    [<JsonProperty(PropertyName = "latest")>]
     Latest: Release
+    Releases: Release list
 }
 
 type ChannelMetadata = {
     Channel: string
     [<JsonProperty(PropertyName = "sonmos")>]
-    SonmOS: SonmOsMetadata option
+    SonmOS: SonmOsMetadata
     
 }
 

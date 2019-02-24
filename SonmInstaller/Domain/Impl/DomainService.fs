@@ -99,7 +99,8 @@ type DomainService () =
                 Path.Combine (appPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
             startDownload = Download.startDownload sonmOsMetadataUrl sonmOsImageDestination
-            downloadMetadata = Download.downloadMetadata
+            downloadMetadata = Download.downloadMetadata sonmOsMetadataUrl
+            downloadRelease = Download.downloadRelease appPath
             generateKeyStore = generateKeyStore
             importKeyStore = importKeyStore
             openKeyFolder = openKeyFolder

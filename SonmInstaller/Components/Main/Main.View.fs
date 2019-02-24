@@ -128,7 +128,7 @@ module Main =
         | Msg.Download p
         | Msg.MakeUsbStick p -> 
             match p with
-            | Progress.Msg.Start -> 
+            | Progress.Msg.Start _ -> 
                 Progress.reset form
                 defaultRender()
             | Progress.Msg.Progress state -> 

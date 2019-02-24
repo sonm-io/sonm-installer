@@ -18,7 +18,9 @@ let homePath =
     else
         Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
 
-let appPath = Path.Combine(homePath, "SONM")
+let appPath = Path.Combine(
+                    Environment.GetFolderPath Environment.SpecialFolder.LocalApplicationData,
+                    "SONM")
 
 let ensureAppPathExists () =
     if Directory.Exists(appPath) |> not then Directory.CreateDirectory(appPath) |> ignore

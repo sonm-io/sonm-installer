@@ -6,6 +6,7 @@ open System.Threading
 open System.Diagnostics
 open SonmInstaller
 open SonmInstaller.Utils
+open SonmInstaller.ReleaseMetadata
 
 let debugWrite header message = Debug.WriteLine ("{0}: {1}", header, message)
 
@@ -62,6 +63,24 @@ let makeUsbStick formattingTime extractTime totalEntries _
     return! loop 0
 }
 
+let mockMetadata: ChannelMetadata = {
+    Channel = "internal"
+    SonmOS = {
+        Latest = {
+            Version = {
+                Major = 0
+                Minor = 0
+                Patch = 0
+                Build = 0
+                Revision = ""
+            }
+            Channel = "internal"
+            Date = ""
+            Components = []}
+        Releases=[]
+    }
+}
+
 let createEmptyService asyncTasksWait = 
     let address = "0x689c56aef474df92d44a1b70850f808488f9769c"
     let ms = asyncTasksWait
@@ -71,7 +90,8 @@ let createEmptyService asyncTasksWait =
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
         startDownload     = immidiatelyDownload
-        downloadMetadata  = (fun _ -> wait ms "downloadMetadata" {Channel = "internal"; SonmOS = None})
+        downloadMetadata  = (fun _ -> wait ms "downloadMetadata" mockMetadata)
+        downloadRelease   = (fun _ _ -> wait ms "downloadRelease" mockMetadata)
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
         importKeyStore    = (fun _ _ -> wait ms "importKeyStore" address)
         openKeyFolder     = debugWrite "openKeyFolder"

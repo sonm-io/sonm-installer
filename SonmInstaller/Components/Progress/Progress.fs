@@ -9,9 +9,9 @@ type State = {
     total: float
 }
 
-type Msg<'res> = 
-    | Start
-    | Progress of State // current * total
+type Msg<'arg, 'res> = 
+    | Start of 'arg
+    | Progress of State
     | Complete of Result<'res, exn>
 
 namespace SonmInstaller.Components
@@ -31,5 +31,5 @@ module ProgressHelpers =
                 total = 0.0
             }
 
-        let start (msg: Msg<'res> -> 'msg) = 
-            Cmd.ofSub (fun d -> Msg.Start |> msg |> d)
+        let start (msg: Msg<'arg,'res> -> 'msg) (arg: 'arg) = 
+            Cmd.ofSub (fun d -> Msg.Start arg|> msg |> d)

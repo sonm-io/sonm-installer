@@ -17,6 +17,7 @@ type Service =
             (Result<unit, exn> -> unit) ->  // completeCb
             unit
         downloadMetadata: (Progress.State -> unit) -> Async<ChannelMetadata>
+        downloadRelease: Release -> (Progress.State -> unit) -> Async<ChannelMetadata>
         generateKeyStore: string -> string -> Async<string> // path -> password -> address
         importKeyStore  : string -> string -> Async<string>
         openKeyFolder: (*path*) string -> unit
@@ -37,6 +38,7 @@ type Service =
         member x.GetUsbDrives () = x.getUsbDrives ()
         member x.StartDownload progressCb completeCb = x.startDownload progressCb completeCb
         member x.DownloadMetadata progress = x.downloadMetadata progress
+        member x.DownloadRelease arg progress = x.downloadRelease arg progress
         member x.GenerateKeyStore path password = x.generateKeyStore path password
         member x.ImportKeyStore   path password = x.importKeyStore path password
         member x.OpenKeyFolder path = x.openKeyFolder path

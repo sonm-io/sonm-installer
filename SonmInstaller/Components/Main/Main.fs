@@ -22,7 +22,10 @@ type MakingUsbStages = Formatting | Extracting
 
 type InstallationProgress =
     | WaitForStart
-    | DownloadingMetadata
+    | MetadataDownloading
+    | MetadataDownloadCompelete
+    | ReleaseDownloading
+    | ReleaseDownloadComplete
     | Downloading
     | DownloadComplete of Result<unit, exn>
     | MakingUsb of MakingUsbStages
@@ -125,8 +128,9 @@ type Msg =
     | NextBtn
     | DialogResult of DlgRes
     | ChangeProgressState of Progress.State option
-    | Download of Progress.Msg<unit>
-    | DownloadMetadata of Progress.Msg<ChannelMetadata>
+    | Download of Progress.Msg<unit, unit>
+    | DownloadMetadata of Progress.Msg<unit, ChannelMetadata>
+    | DownloadRelease of Progress.Msg<Release, ChannelMetadata>
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
     | GenerateKey of AsyncTask<string>
@@ -136,4 +140,4 @@ type Msg =
     | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
     | UsbDrives of UsbDrivesMsg
-    | MakeUsbStick of Progress.Msg<unit>
+    | MakeUsbStick of Progress.Msg<unit, unit>
