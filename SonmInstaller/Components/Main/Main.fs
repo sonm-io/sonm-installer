@@ -27,7 +27,7 @@ type InstallationProgress =
     | ReleaseDownloading
     | ReleaseDownloadComplete
     | Downloading
-    | DownloadComplete of Result<unit, exn>
+    | DownloadComplete of Result<Release, exn>
     | MakingUsb of MakingUsbStages
     | Finish
 
@@ -69,6 +69,7 @@ type State = {
     progress: Progress.State option
     installationProgress: InstallationProgress
     channelMetadata: ChannelMetadata option
+    downloadedRelease: Release option
     backButton: Button.State
     nextButton: Button.State
     isPending: bool
@@ -130,7 +131,7 @@ type Msg =
     | ChangeProgressState of Progress.State option
     | Download of Progress.Msg<unit, unit>
     | DownloadMetadata of Progress.Msg<unit, ChannelMetadata>
-    | DownloadRelease of Progress.Msg<Release, ChannelMetadata>
+    | DownloadRelease of Progress.Msg<Release, Release>
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
     | GenerateKey of AsyncTask<string>
@@ -140,4 +141,4 @@ type Msg =
     | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
     | UsbDrives of UsbDrivesMsg
-    | MakeUsbStick of Progress.Msg<unit, unit>
+    | MakeUsbStick of Progress.Msg<Release, unit>

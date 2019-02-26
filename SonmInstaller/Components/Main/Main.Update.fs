@@ -19,7 +19,7 @@ module Main =
             completeCb: (Result<unit, exn> -> unit) ->  // ToDo: rewrite to Async
             unit
         abstract member DownloadMetadata : progress: (Progress.State -> unit) -> Async<ChannelMetadata>
-        abstract member DownloadRelease : arg: Release -> progress: (Progress.State -> unit) -> Async<ChannelMetadata>
+        abstract member DownloadRelease : arg: Release -> progress: (Progress.State -> unit) -> Async<Release>
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
         abstract member ImportKeyStore   : path: string -> password: string -> Async<string>
         abstract member OpenKeyFolder : path: string -> unit
@@ -158,12 +158,12 @@ module Main =
                     total = 0.0
                 }
 
-        let startMakingUsb s = 
+        let startMakingUsb s release = 
             let stage = Formatting
             { s with 
                 installationProgress = MakingUsb stage
                 progress = stage |> getMakingUsbProgressTpl |> Some
-            }, Progress.start MakeUsbStick ()
+            }, Progress.start MakeUsbStick release
 
         let nextBtn (srv: IService) (state: Main.State) (dialogRes: DlgRes option) = 
 
@@ -203,8 +203,8 @@ module Main =
                         { s with show = ShowMessageBox box }, Cmd.none, None
                     | Some DlgRes.Ok     -> 
                         match s.installationProgress with
-                        | DownloadComplete _ -> 
-                            let (ns, cmd) = startMakingUsb s
+                        | DownloadComplete (Result.Ok release) -> 
+                            let (ns, cmd) = startMakingUsb s release
                             ns, cmd, Some Screen.S5Progress
                         | Downloading -> goTo Screen.S5Progress
                         | _ -> failwith "unexpected case"
@@ -305,7 +305,7 @@ module Main =
                     srv.DownloadRelease arg progress
                 let completion (s, res) =
                     match res with 
-                    | Result.Ok cm -> s, Progress.Msg.Start cm.SonmOS.Latest |> DownloadRelease |> Cmd.ofMsg
+                    | Result.Ok r -> {s with downloadedRelease = Some r }, Cmd.none
                     | Error exn -> 
                         ExnHlp.showExn 
                             false 
@@ -316,9 +316,9 @@ module Main =
                 task
                 |> AsyncHlp.processProgressTask s factory
                     (Progress.Msg.Complete >> DownloadRelease)
-                    (AsyncHlp.mapStateOk (fun s res -> { s with installationProgress = ReleaseDownloadComplete  })
+                    (AsyncHlp.mapStateOk (fun s res -> { s with installationProgress = Result.Ok res |> DownloadComplete })
                         >> completion)
-            | Download act -> 
+(*            | Download act -> 
                 match act with
                 | Progress.Msg.Start _ -> 
                     let ns = { s with installationProgress = Downloading }
@@ -333,7 +333,7 @@ module Main =
                     let ns = { s with progress = Some progress }
                     match s.CurrentScreen() with 
                     | Screen.S5Progress -> startMakingUsb ns
-                    | _ -> { ns with installationProgress = DownloadComplete res }, Cmd.none
+                    | _ -> { ns with installationProgress = DownloadComplete res }, Cmd.none *)
             | HasWallet hasWallet -> { s with hasWallet = hasWallet }, Cmd.none
             | NewKeyMsg action -> 
                 let res = NewKeyPage.update s.newKeyState action
@@ -423,6 +423,7 @@ module Main =
                     (AsyncHlp.mapStateOk (fun s _ -> { s with installationProgress = Finish })
                      >> AsyncHlp.toScreen Screen.S6Finish "Error" 
                      >> fun (s, _) -> s, Cmd.none)
+            | Download _-> s, Cmd.none
         
     open Impl
 
@@ -440,6 +441,7 @@ module Main =
             progress = None
             installationProgress = InstallationProgress.WaitForStart
             channelMetadata = None
+            downloadedRelease = None
             isProcessElevated = srv.IsProcessElevated ()
             hasWallet = false
             newKeyState = NewKeyPage.init srv

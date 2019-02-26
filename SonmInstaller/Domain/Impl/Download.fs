@@ -33,34 +33,64 @@ module private Internal =
             failwith "Error parsing release metadata"
         cm
 
-    let calcCheckSum path = async {
-        let digester = SHA256.Create()
-        let file = File.OpenRead path
-        let buffer = Array.empty<byte>
-        let hash = digester.ComputeHash buffer
-        return true
-    }
+    let hashFile (path: string) =
+        let bufferSize = 4096
+        let hashFunction = new SHA256Cng()
+        let rec hashBlock currentBlock count (stream: FileStream) = async {
+            let buffer = Array.zeroCreate<byte> bufferSize
+            let! readCount = stream.AsyncRead buffer
+            if readCount = 0 then
+                hashFunction.TransformFinalBlock(currentBlock, 0, count) |> ignore
+            else 
+                hashFunction.TransformBlock(currentBlock, 0, count, currentBlock, 0) |> ignore
+                return! hashBlock buffer readCount stream
+        }
+        async {
+            Trace.WriteLine(String.Format("Checking checksum for {0} ", path))
+            use stream = File.OpenRead path
+            let buffer = Array.zeroCreate<byte> bufferSize
+            let! readCount = stream.AsyncRead buffer
+            do! hashBlock buffer readCount stream
+            let sum = hashFunction.Hash |> Array.map (fun b -> b.ToString("x2")) |> String.concat String.Empty
+            Trace.WriteLine(String.Format("Checksum for {0} is {1}", path, sum))
+            return sum
+        }
     
     let archiveLocation path (archive: Archive) = 
         Path.Combine(path, archive.Name)
 
-    let archiveExistsAndCheckSumMatch path sum = async {
+    let archiveExistsAndCheckSumMatch (path: string) sum = async {
+        Trace.WriteLine(String.Format("Checking archive {0} exists", path))
         match File.Exists path with
-        | true -> return! calcCheckSum path
+        | true -> let! localSum = hashFile path
+                  return sum = localSum
         | false -> return false
     }
     
-    let downloadArchive path (archive: Archive) = async {
-        let archivePath = archiveLocation path archive
-        match! archiveExistsAndCheckSumMatch archivePath archive.Sha256 with
-        | true -> ()
-        | false -> ()
+    let downloadArchive archivePath (archive: Archive) = async {
+        Trace.WriteLine(String.Format("Actual downloading archive {0}", archive.Name))
         let! response = Http.AsyncRequestStream(archive.URL)
+        use stream = File.OpenWrite archivePath
+        let! _ = response.ResponseStream.CopyToAsync stream |> Async.AwaitTask        
         return ()       
     }
+    let downloadArchiveIfNeeded path (archive: Archive) = async {
+        Trace.WriteLine(String.Format("Downloading archive {0}", archive.Name))
+        let archivePath = archiveLocation path archive
+        match! archiveExistsAndCheckSumMatch archivePath archive.Sha256 with
+        | false -> let! a = downloadArchive archivePath archive
+                   return! archiveExistsAndCheckSumMatch archivePath archive.Sha256
+        | res -> return res
+    }
+
+    let ensureDirExists path =
+        if Directory.Exists path |> not then Directory.CreateDirectory path |> ignore
     
-    let downloadComponent path comp = 
-        comp.Archives |> List.map (downloadArchive path)
+    let downloadComponent version path comp = 
+        Trace.WriteLine(String.Format("Downloading component {0}", comp.Name))
+        let releasePath = Path.Combine(path, versionToString version)
+        ensureDirExists releasePath
+        comp.Archives |> List.map (downloadArchiveIfNeeded releasePath)
 
 open Internal
 
@@ -80,15 +110,15 @@ let downloadMetadata (url: string) (progress: Progress.State -> unit) = async {
 let downloadRelease (path: string) (r: Release) (progress: Progress.State -> unit) = async {
     let statec = state "Downloading release files"
     statec 0 0 |> progress
+    Trace.WriteLine("Starting download release")
+    let! res = r.Components 
+               |> List.map (downloadComponent r.Version path)
+               |> List.concat
+               |> Async.Parallel
+    if Array.fold (fun (i:bool) (b:bool) -> i && b) true res |> not then
+        failwithf "There are error occured while dowloading release version %s from channel %s" (versionToString r.Version) r.Channel
 
-    let! res = r.Components |> List.map (downloadComponent path) |> List.concat |> Async.Parallel
-    return {
-        Channel = "internal"
-        SonmOS = {
-            Latest = r
-            Releases = List.Empty
-        }
-    }
+    return r
 }    
 
 let startDownload (url: string) (destinationPath: string) (progressCb: int64 -> int64 -> unit) (completeCb: Result<unit, exn> -> unit) =

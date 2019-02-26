@@ -22,10 +22,18 @@ let appPath = Path.Combine(
                     Environment.GetFolderPath Environment.SpecialFolder.LocalApplicationData,
                     "SONM")
 
-let ensureAppPathExists () =
-    if Directory.Exists(appPath) |> not then Directory.CreateDirectory(appPath) |> ignore
+let keyPath = Path.Combine(
+                    Environment.GetFolderPath Environment.SpecialFolder.MyDocuments,
+                    "SONM")
+
+let ensurePathExists path () =
+    if Directory.Exists(path) |> not then Directory.CreateDirectory(path) |> ignore
+
+let ensureAppPathExists = ensurePathExists appPath
         
-let defaultNewKeyPath = Path.Combine(appPath, "key.json")
+let ensureKeyPathExists = ensurePathExists keyPath
+
+let defaultNewKeyPath = Path.Combine(keyPath, "key.json")
 
 let saveTextFile path content =
     File.WriteAllText(path, content)

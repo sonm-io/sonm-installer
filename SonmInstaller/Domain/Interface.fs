@@ -17,7 +17,7 @@ type Service =
             (Result<unit, exn> -> unit) ->  // completeCb
             unit
         downloadMetadata: (Progress.State -> unit) -> Async<ChannelMetadata>
-        downloadRelease: Release -> (Progress.State -> unit) -> Async<ChannelMetadata>
+        downloadRelease: Release -> (Progress.State -> unit) -> Async<Release>
         generateKeyStore: string -> string -> Async<string> // path -> password -> address
         importKeyStore  : string -> string -> Async<string>
         openKeyFolder: (*path*) string -> unit

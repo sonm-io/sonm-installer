@@ -125,7 +125,6 @@ module Main =
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
         let defaultRender () = Common.view form prev next d
         match msg with
-        | Msg.Download p
         | Msg.MakeUsbStick p -> 
             match p with
             | Progress.Msg.Start _ -> 

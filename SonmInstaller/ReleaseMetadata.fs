@@ -1,6 +1,6 @@
 ﻿module SonmInstaller.ReleaseMetadata
 
-
+open System
 open Newtonsoft.Json
 
 type ArchivedFile = {
@@ -51,3 +51,5 @@ type ChannelMetadata = {
     
 }
 
+let versionToString v = 
+    String.Format("{0}.{1}.{2}-{3}-{4}", v.Major, v.Minor, v.Patch, v.Build, v.Revision)

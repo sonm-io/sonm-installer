@@ -87,11 +87,11 @@ let createEmptyService asyncTasksWait =
     let wait = waitReturn
     {
         isProcessElevated = (fun () -> true)
-        getUtcFilePath    = (fun _ -> Path.Combine (Tools.appPath, "key.json"))
+        getUtcFilePath    = (fun _ -> Path.Combine (Tools.keyPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
         startDownload     = immidiatelyDownload
         downloadMetadata  = (fun _ -> wait ms "downloadMetadata" mockMetadata)
-        downloadRelease   = (fun _ _ -> wait ms "downloadRelease" mockMetadata)
+        downloadRelease   = (fun _ _ -> wait ms "downloadRelease" mockMetadata.SonmOS.Latest)
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
         importKeyStore    = (fun _ _ -> wait ms "importKeyStore" address)
         openKeyFolder     = debugWrite "openKeyFolder"

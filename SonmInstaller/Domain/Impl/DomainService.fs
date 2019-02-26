@@ -96,7 +96,7 @@ type DomainService () =
         { 
             isProcessElevated = (fun () -> isProcessElevated)
             getUtcFilePath = fun () -> 
-                Path.Combine (appPath, (Blockchain.getUtcFileName master.Address) + ".json")
+                Path.Combine (keyPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
             startDownload = Download.startDownload sonmOsMetadataUrl sonmOsImageDestination
             downloadMetadata = Download.downloadMetadata sonmOsMetadataUrl
