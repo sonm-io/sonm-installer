@@ -36,30 +36,33 @@
             // 
             this.ProgressBarInner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ProgressBarInner.Location = new System.Drawing.Point(0, 30);
+            this.ProgressBarInner.Location = new System.Drawing.Point(0, 24);
+            this.ProgressBarInner.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.ProgressBarInner.MarqueeAnimationSpeed = 10;
             this.ProgressBarInner.Name = "ProgressBarInner";
-            this.ProgressBarInner.Size = new System.Drawing.Size(696, 12);
+            this.ProgressBarInner.Size = new System.Drawing.Size(522, 10);
             this.ProgressBarInner.TabIndex = 0;
             // 
             // lblProgress
             // 
             this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblProgress.AutoSize = true;
-            this.lblProgress.Location = new System.Drawing.Point(4, 7);
+            this.lblProgress.Location = new System.Drawing.Point(3, 6);
+            this.lblProgress.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(169, 17);
+            this.lblProgress.Size = new System.Drawing.Size(125, 13);
             this.lblProgress.TabIndex = 1;
             this.lblProgress.Text = "Progress {0} of {1} ({2}%)";
             // 
             // ProgressBar
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.lblProgress);
             this.Controls.Add(this.ProgressBarInner);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "ProgressBar";
-            this.Size = new System.Drawing.Size(696, 45);
+            this.Size = new System.Drawing.Size(522, 37);
             this.ResumeLayout(false);
             this.PerformLayout();
 
