@@ -129,7 +129,6 @@ type Msg =
     | NextBtn
     | DialogResult of DlgRes
     | ChangeProgressState of Progress.State option
-    | Download of Progress.Msg<unit, unit>
     | DownloadMetadata of Progress.Msg<unit, ChannelMetadata>
     | DownloadRelease of Progress.Msg<Release, Release>
     | HasWallet of bool

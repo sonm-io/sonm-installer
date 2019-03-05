@@ -11,6 +11,7 @@ module Progress =
         open System.Windows.Forms
 
         let resetValue (pb: UI.ProgressBar) = 
+            pb.LabelTpl <- ""
             pb.ProgressCurrent <- 0.
             pb.ProgressTotal <- 100.
         

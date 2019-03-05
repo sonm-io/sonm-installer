@@ -20,7 +20,7 @@ type Archive = {
 type Component = {
     Name: string
     Archives: Archive list
-    Size: int64
+    Size: int
 }
 
 type Version = {

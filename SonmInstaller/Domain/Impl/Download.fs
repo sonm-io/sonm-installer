@@ -9,21 +9,35 @@ open System.Security.Cryptography
 open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Components
 open FSharp.Data
+open SonmInstaller.Atom
 
 module private Internal =
+    open SonmInstaller.Tools
 
     let getLengthFor response = 
         response.Headers
             |> Map.tryFind "Content-Length" 
             |> Option.bind (fun s -> try s |> int |> Some with | _ -> None) 
 
-    let state caption total progress = 
+    let stateComplete = 
         {
-            Progress.State.captionTpl=if total > 0 then caption + " {0:0.0} of {1:0.0} ({2:0}%)" else caption
-            Progress.State.style=if total > 0 then Progress.ProgressStyle.Continuous else Progress.ProgressStyle.Marquee
-            Progress.State.current=float progress
-            Progress.State.total=float total
+            Progress.State.captionTpl="Download complete"
+            Progress.State.style=Progress.ProgressStyle.Continuous
+            Progress.State.current=100.0
+            Progress.State.total=100.0
         }
+       
+    let sharedState caption cont total progress =
+        let counter = atom (fun () -> 0)
+        let state = {
+            Progress.State.captionTpl=if cont then caption + " {0:0.0} of {1:0.0} Mb ({2:0}%)" else caption
+            Progress.State.style=if cont then Progress.ProgressStyle.Continuous else Progress.ProgressStyle.Marquee
+            Progress.State.current=0.0
+            Progress.State.total=(float total) / 1024.0 / 1024.0
+        }
+        (fun current -> 
+            swap counter (fun f -> (fun result () -> result + current) <| f()) |> ignore
+            {state with current=float ((!counter)()) / 1024.0 / 1024.0} |> progress)
 
     let parseMetadata streamReader =
         let ser = JsonSerializer ()
@@ -33,103 +47,63 @@ module private Internal =
             failwith "Error parsing release metadata"
         cm
 
-    let hashFile (path: string) =
-        let bufferSize = 4096
-        let hashFunction = new SHA256Cng()
-        let rec hashBlock currentBlock count (stream: FileStream) = async {
-            let buffer = Array.zeroCreate<byte> bufferSize
-            let! readCount = stream.AsyncRead buffer
-            if readCount = 0 then
-                hashFunction.TransformFinalBlock(currentBlock, 0, count) |> ignore
-            else 
-                hashFunction.TransformBlock(currentBlock, 0, count, currentBlock, 0) |> ignore
-                return! hashBlock buffer readCount stream
-        }
-        async {
-            Trace.WriteLine(String.Format("Checking checksum for {0} ", path))
-            use stream = File.OpenRead path
-            let buffer = Array.zeroCreate<byte> bufferSize
-            let! readCount = stream.AsyncRead buffer
-            do! hashBlock buffer readCount stream
-            let sum = hashFunction.Hash |> Array.map (fun b -> b.ToString("x2")) |> String.concat String.Empty
-            Trace.WriteLine(String.Format("Checksum for {0} is {1}", path, sum))
-            return sum
-        }
-    
     let archiveLocation path (archive: Archive) = 
         Path.Combine(path, archive.Name)
 
-    let archiveExistsAndCheckSumMatch (path: string) sum = async {
-        Trace.WriteLine(String.Format("Checking archive {0} exists", path))
+    let archiveExistsAndCheckSumMatch progress (path: string) sum = async {
         match File.Exists path with
-        | true -> let! localSum = hashFile path
+        | true -> let! localSum = hashFile progress path
                   return sum = localSum
         | false -> return false
     }
     
-    let downloadArchive archivePath (archive: Archive) = async {
-        Trace.WriteLine(String.Format("Actual downloading archive {0}", archive.Name))
+    let downloadArchive progress archivePath (archive: Archive) = async {
         let! response = Http.AsyncRequestStream(archive.URL)
-        use stream = File.OpenWrite archivePath
-        let! _ = response.ResponseStream.CopyToAsync stream |> Async.AwaitTask        
+        let fileStream = File.OpenWrite archivePath
+        use reportStream = new ReportStream(fileStream, progress)
+        let! _ = response.ResponseStream.CopyToAsync reportStream |> Async.AwaitTask        
         return ()       
     }
-    let downloadArchiveIfNeeded path (archive: Archive) = async {
-        Trace.WriteLine(String.Format("Downloading archive {0}", archive.Name))
+    let downloadArchiveIfNeeded progress path (archive: Archive) = async {
         let archivePath = archiveLocation path archive
-        match! archiveExistsAndCheckSumMatch archivePath archive.Sha256 with
-        | false -> let! a = downloadArchive archivePath archive
-                   return! archiveExistsAndCheckSumMatch archivePath archive.Sha256
+        match! archiveExistsAndCheckSumMatch (Some progress) archivePath archive.Sha256 with
+        | false -> progress (if File.Exists archivePath then -(int (FileInfo archivePath).Length) else 0)
+                   let! a = downloadArchive progress archivePath archive
+                   return! archiveExistsAndCheckSumMatch None archivePath archive.Sha256
         | res -> return res
     }
 
     let ensureDirExists path =
         if Directory.Exists path |> not then Directory.CreateDirectory path |> ignore
     
-    let downloadComponent version path comp = 
+    let downloadComponent progress version path  comp = 
         Trace.WriteLine(String.Format("Downloading component {0}", comp.Name))
         let releasePath = Path.Combine(path, versionToString version)
         ensureDirExists releasePath
-        comp.Archives |> List.map (downloadArchiveIfNeeded releasePath)
+        comp.Archives |> List.map (downloadArchiveIfNeeded progress releasePath)
 
 open Internal
 
 let downloadMetadata (url: string) (progress: Progress.State -> unit) = async {
-    let statec = state "Downloading release information"
-    statec 0 0 |> progress
+    let state = sharedState "Downloading release information" false 0 progress
+    state 0
     let! response = Http.AsyncRequestStream(url)
-    let length = getLengthFor response |> Option.defaultValue 0
-    let statel = statec length
-    statel 0 |> progress
     use reader = new StreamReader(response.ResponseStream)
     let result = parseMetadata reader
-    statel length |> progress
+    stateComplete |> progress
     return result
 }    
 
 let downloadRelease (path: string) (r: Release) (progress: Progress.State -> unit) = async {
-    let statec = state "Downloading release files"
-    statec 0 0 |> progress
-    Trace.WriteLine("Starting download release")
+    let releaseSize = r.Components |> List.fold (fun acc  c -> acc + c.Size) 0 
+    let statec = sharedState "Downloading release files" true releaseSize progress
+    statec 0
     let! res = r.Components 
-               |> List.map (downloadComponent r.Version path)
+               |> List.map (downloadComponent statec r.Version path)
                |> List.concat
                |> Async.Parallel
     if Array.fold (fun (i:bool) (b:bool) -> i && b) true res |> not then
         failwithf "There are error occured while dowloading release version %s from channel %s" (versionToString r.Version) r.Channel
-
+    stateComplete |> progress
     return r
-}    
-
-let startDownload (url: string) (destinationPath: string) (progressCb: int64 -> int64 -> unit) (completeCb: Result<unit, exn> -> unit) =
-    let uri = new Uri(url)
-    let client = new WebClient();
-    client.DownloadProgressChanged.Add <| fun e -> 
-        progressCb e.BytesReceived e.TotalBytesToReceive
-    client.DownloadDataCompleted.Add <| fun e -> 
-        let r = if e.Error = null then Ok () else Error e.Error
-        use reader = new StringReader(System.Text.Encoding.ASCII.GetString e.Result)
-        Trace.WriteLine(String.Format("gotMetadata: {0}", parseMetadata reader))
-        completeCb r
-    client.DownloadDataAsync(uri);
-
+}

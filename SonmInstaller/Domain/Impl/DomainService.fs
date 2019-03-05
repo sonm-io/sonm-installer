@@ -58,7 +58,7 @@ type DomainService () =
         |> Seq.sortBy fst
         |> List.ofSeq
     
-    let makeUsbStick diskIndex onStageChange progress = 
+    let makeUsbStick diskIndex release progress = 
         let getAdminKeyContent () = 
             [
                 admin.Address
@@ -66,18 +66,16 @@ type DomainService () =
             ] |> String.concat "\n"
         
         let cfg = {
-            zipPath = sonmOsImageDestination
+            release = release
+            downloadsPath = appPath
             toolsPath = libPath
             usbDiskIndex = diskIndex
             masterAddr = master.Address
             adminKeyContent = getAdminKeyContent ()
-            onStageChange = onStageChange
             progress = progress
             output = fun _ -> ()
         }
-        async {
-            UsbStickMaker.makeUsbStick cfg
-        }
+        UsbStickMaker.makeUsbStick cfg
 
     let callSmartContract (withdrawTo: string) (minPayout: float) = async {
         do! {
@@ -98,7 +96,6 @@ type DomainService () =
             getUtcFilePath = fun () -> 
                 Path.Combine (keyPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
-            startDownload = Download.startDownload sonmOsMetadataUrl sonmOsImageDestination
             downloadMetadata = Download.downloadMetadata sonmOsMetadataUrl
             downloadRelease = Download.downloadRelease appPath
             generateKeyStore = generateKeyStore

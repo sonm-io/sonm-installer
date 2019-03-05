@@ -14,10 +14,6 @@ module Main =
         inherit NewKeyPage.IService
         abstract member IsProcessElevated: unit -> bool
         abstract member GetUsbDrives: unit -> (int * string) list
-        abstract member StartDownload: 
-            progressCb: (int64 -> int64 -> unit) ->
-            completeCb: (Result<unit, exn> -> unit) ->  // ToDo: rewrite to Async
-            unit
         abstract member DownloadMetadata : progress: (Progress.State -> unit) -> Async<ChannelMetadata>
         abstract member DownloadRelease : arg: Release -> progress: (Progress.State -> unit) -> Async<Release>
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
@@ -25,7 +21,7 @@ module Main =
         abstract member OpenKeyFolder : path: string -> unit
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
-        abstract member MakeUsbStick: drive: int -> onStageChange: (unit -> unit) -> progress: (int -> int -> unit) -> Async<unit>
+        abstract member MakeUsbStick: drive: int -> release: Release -> progress: (Progress.State -> unit) -> Async<unit>
         abstract member CloseApp: unit -> unit
 
     module private Impl = 
@@ -115,32 +111,6 @@ module Main =
                 | Progress.Msg.Progress _   -> s, Cmd.none
                 | Progress.Msg.Complete res -> 
                     mapRes (s, res)           
-
-        let startDownloadTask (service: IService) dispatch =
-            let progressCb (bytesDownloaded: Int64) (total: Int64) = 
-                {
-                    Progress.State.captionTpl = "Downloading: {0:0.0} of {1:0.0} ({2:0}%)"
-                    Progress.State.style = Progress.ProgressStyle.Continuous
-                    Progress.State.current = (float bytesDownloaded) / 1024. / 1024.
-                    Progress.State.total = (float total) / 1024. / 1024.
-                }
-                |> Progress.Msg.Progress |> dispatch
-                System.Console.WriteLine ("progressCb: {0}", bytesDownloaded)
-            let completeCb = Progress.Msg.Complete >> dispatch 
-            service.StartDownload
-                progressCb
-                completeCb
-
-        let startDownload s =
-            { s with 
-                installationProgress = Downloading 
-                progress = Some {
-                    captionTpl = "Download in progress: {0:0.0} of {1:0.0} ({2:0}%)"
-                    style = Progress.Continuous 
-                    current = 0.0
-                    total = 0.0
-                }
-            }, Progress.start Download ()
 
         let getMakingUsbProgressTpl: MakingUsbStages -> Progress.State = function
             | Formatting -> 
@@ -242,7 +212,9 @@ module Main =
                     | Screen.S2a1KeyGen       -> s.newKeyState.NextAllowed()
                     | Screen.S2b1SelectJson   -> s.existingKeystore.path.IsSome
                     | Screen.S2b2JsonPassword -> not <| String.IsNullOrEmpty(s.existingKeystore.password)
-                    | Screen.S4SelectDisk     -> s.usbDrives.selectedDrive.IsSome
+                    | Screen.S4SelectDisk     -> s.usbDrives.selectedDrive.IsSome && match s.installationProgress with 
+                                                                                     |DownloadComplete(_) -> true
+                                                                                     | _ -> false
                     | _ -> true
                 let b = match s.CurrentScreen () with
                         | Screen.S0Welcome    -> button.btnBegin
@@ -318,22 +290,6 @@ module Main =
                     (Progress.Msg.Complete >> DownloadRelease)
                     (AsyncHlp.mapStateOk (fun s res -> { s with installationProgress = Result.Ok res |> DownloadComplete })
                         >> completion)
-(*            | Download act -> 
-                match act with
-                | Progress.Msg.Start _ -> 
-                    let ns = { s with installationProgress = Downloading }
-                    ns, Cmd.map Msg.Download (Cmd.ofSub (startDownloadTask srv))
-                | Progress.Msg.Progress p ->  { s with progress = Some p }, Cmd.none
-                | Progress.Msg.Complete res -> 
-                    let label = res |> function Result.Ok () -> "Download complete" | Error _ -> "Download error"
-                    let progress = 
-                        { Option.defaultValue Progress.defaultValue s.progress with
-                            captionTpl = label
-                        }
-                    let ns = { s with progress = Some progress }
-                    match s.CurrentScreen() with 
-                    | Screen.S5Progress -> startMakingUsb ns
-                    | _ -> { ns with installationProgress = DownloadComplete res }, Cmd.none *)
             | HasWallet hasWallet -> { s with hasWallet = hasWallet }, Cmd.none
             | NewKeyMsg action -> 
                 let res = NewKeyPage.update s.newKeyState action
@@ -393,29 +349,11 @@ module Main =
                     | SelectDrive drive -> { s.usbDrives with selectedDrive = drive }
                 { s with usbDrives = usbDrives }, Cmd.none 
             | MakeUsbStick task -> 
-                let factory arg dispatch = 
+                let factory release dispatch = 
                     let driveIndex = s.usbDrives.selectedDrive.Value |> fst
-                    let onStageChange () = 
-                        let errMsg = "Unexpected installation stage"
-                        match s.installationProgress with
-                        | MakingUsb stage -> 
-                            match stage with
-                            | Formatting -> Extracting
-                            | Extracting -> failwith errMsg
-                        | _ -> failwith errMsg
-                        |> getMakingUsbProgressTpl
-                        |> Progress.Msg.Progress
-                        |> MakeUsbStick 
-                        |> dispatch
-                    let progress (processed: int) (total: int) = 
-                        {
-                            Progress.State.captionTpl = "Making USB Drive"
-                            Progress.State.style = Progress.ProgressStyle.Continuous
-                            Progress.State.current = float processed
-                            Progress.State.total = float total
-
-                        } |> Progress.Msg.Progress |> MakeUsbStick |> dispatch
-                    srv.MakeUsbStick driveIndex onStageChange progress
+                    let progress state = 
+                        state |> Some |> ChangeProgressState |> dispatch
+                    srv.MakeUsbStick driveIndex release progress
 
                 task
                 |> AsyncHlp.processProgressTask s factory 
@@ -423,7 +361,6 @@ module Main =
                     (AsyncHlp.mapStateOk (fun s _ -> { s with installationProgress = Finish })
                      >> AsyncHlp.toScreen Screen.S6Finish "Error" 
                      >> fun (s, _) -> s, Cmd.none)
-            | Download _-> s, Cmd.none
         
     open Impl
 

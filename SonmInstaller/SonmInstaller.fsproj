@@ -50,6 +50,7 @@
     <Compile Include="Elmish\Elmish.Cmd.fs" />
     <Compile Include="Elmish\Elmish.Program.fs" />
     <Compile Include="Elmish\Elmish.Winforms.fs" />
+    <Compile Include="Atom.fs" />
     <Compile Include="Tools.fs" />
     <Compile Include="WizardForm.fs" />
     <Compile Include="ReleaseMetadata.fs" />

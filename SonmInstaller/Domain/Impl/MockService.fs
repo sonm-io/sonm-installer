@@ -5,8 +5,9 @@ open System.IO
 open System.Threading
 open System.Diagnostics
 open SonmInstaller
-open SonmInstaller.Utils
+open SonmInstaller.Components
 open SonmInstaller.ReleaseMetadata
+open SonmInstaller.Components.Progress
 
 let debugWrite header message = Debug.WriteLine ("{0}: {1}", header, message)
 
@@ -48,15 +49,18 @@ let download
         
     Console.WriteLine("StartDownload")
 
-let makeUsbStick formattingTime extractTime totalEntries _ 
-    (onStageChange: unit -> unit) 
-    (progress: int -> int -> unit) = async { //ToDo: simplify
+let makeUsbStick formattingTime extractTime totalEntries _ _
+    (progress: Progress.State -> unit) = async { //ToDo: simplify
     do! Async.Sleep formattingTime
-    onStageChange()
     let delta = (float extractTime) / (float totalEntries) |> int
     let rec loop processedEntries = async {
         do! Async.Sleep delta
-        progress processedEntries totalEntries
+        progress {
+            captionTpl = "Making USB"
+            style = ProgressStyle.Continuous
+            current = float processedEntries
+            total = float totalEntries
+        }
         if processedEntries < totalEntries then
             do! loop (processedEntries + 1)
     }
@@ -89,7 +93,6 @@ let createEmptyService asyncTasksWait =
         isProcessElevated = (fun () -> true)
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.keyPath, "key.json"))
         getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
-        startDownload     = immidiatelyDownload
         downloadMetadata  = (fun _ -> wait ms "downloadMetadata" mockMetadata)
         downloadRelease   = (fun _ _ -> wait ms "downloadRelease" mockMetadata.SonmOS.Latest)
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
