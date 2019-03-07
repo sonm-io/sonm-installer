@@ -53,7 +53,7 @@ module Impl =
         [
             sprintf "select disk %d" diskIndex
             "clean"
-            "create part primary size=2048"
+            "create part primary size=2560"
             "select partition 1"
             "format fs=fat32 quick"
             "create partition primary"

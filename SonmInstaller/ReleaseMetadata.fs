@@ -15,12 +15,13 @@ type Archive = {
     Contents: ArchivedFile list
     Sha256: string
     URL: string
+    Size: int64
 }
 
 type Component = {
     Name: string
     Archives: Archive list
-    Size: int
+    Size: int64
 }
 
 type Version = {

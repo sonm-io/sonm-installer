@@ -17,9 +17,9 @@ type ReportStream(s: Stream, report) =
 
     override this.Flush() = s.Flush() 
     override this.Close() = s.Close() 
-    override this.Read(buffer, offset, count) = report count
+    override this.Read(buffer, offset, count) = report (int64 count)
                                                 s.Read(buffer, offset, count)
-    override this.Write(buffer, offset, count) = report count
+    override this.Write(buffer, offset, count) = report (int64 count)
                                                  s.Write(buffer, offset, count)
     override this.Seek(offset, origin) = s.Seek(offset, origin)
     override this.SetLength(value) = s.SetLength(value)

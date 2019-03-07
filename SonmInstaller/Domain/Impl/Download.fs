@@ -28,7 +28,7 @@ module private Internal =
         }
        
     let sharedState caption cont total progress =
-        let counter = atom (fun () -> 0)
+        let counter = atom (fun () -> 0L)
         let state = {
             Progress.State.captionTpl=if cont then caption + " {0:0.0} of {1:0.0} Mb ({2:0}%)" else caption
             Progress.State.style=if cont then Progress.ProgressStyle.Continuous else Progress.ProgressStyle.Marquee
@@ -67,7 +67,7 @@ module private Internal =
     let downloadArchiveIfNeeded progress path (archive: Archive) = async {
         let archivePath = archiveLocation path archive
         match! archiveExistsAndCheckSumMatch (Some progress) archivePath archive.Sha256 with
-        | false -> progress (if File.Exists archivePath then -(int (FileInfo archivePath).Length) else 0)
+        | false -> progress (if File.Exists archivePath then -(FileInfo archivePath).Length else 0L)
                    let! a = downloadArchive progress archivePath archive
                    return! archiveExistsAndCheckSumMatch None archivePath archive.Sha256
         | res -> return res
@@ -85,8 +85,8 @@ module private Internal =
 open Internal
 
 let downloadMetadata (url: string) (progress: Progress.State -> unit) = async {
-    let state = sharedState "Downloading release information" false 0 progress
-    state 0
+    let state = sharedState "Downloading release information" false 0L progress
+    state 0L
     let! response = Http.AsyncRequestStream(url)
     use reader = new StreamReader(response.ResponseStream)
     let result = parseMetadata reader
@@ -95,9 +95,13 @@ let downloadMetadata (url: string) (progress: Progress.State -> unit) = async {
 }    
 
 let downloadRelease (path: string) (r: Release) (progress: Progress.State -> unit) = async {
-    let releaseSize = r.Components |> List.fold (fun acc  c -> acc + c.Size) 0 
+    let releaseSize = r.Components
+                      |> List.map (fun c -> c.Archives)
+                      |> List.concat
+                      |> List.map (fun a -> a.Size)
+                      |> List.fold (fun acc  c -> acc + c) 0L 
     let statec = sharedState "Downloading release files" true releaseSize progress
-    statec 0
+    statec 0L
     let! res = r.Components 
                |> List.map (downloadComponent statec r.Version path)
                |> List.concat
