@@ -55,7 +55,7 @@ module Impl =
             "clean"
             "create part primary size=2560"
             "select partition 1"
-            "format fs=fat32 quick"
+            "format label=\"SONM\" fs=fat32 quick"
             "create partition primary"
             "exit\n"
         ] |> String.concat "\n"
@@ -212,7 +212,7 @@ let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     dpOut |> cfg.output
     let letter = getFstVolumeLetter cfg.usbDiskIndex
     // tasks:
-    let syslinux  () = runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a %s" letter) |> cfg.output
+    let syslinux  () = runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a -d boot %s" letter) |> cfg.output
     let fixBoot   () = async {
         [
             @"\boot\libcom32.c32"
