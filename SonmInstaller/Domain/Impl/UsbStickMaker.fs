@@ -179,7 +179,8 @@ let saveMasterAddr (master: string) (usbLetter: string) = async {
                     lines.[index] <- lines.[index] + master
                     lines
                 else
-                    [|sprintf @"MASTER_ADDR=%s" master|]
+                    [|"# Ethereum address of master"
+                      sprintf @"MASTER_ADDR=%s" master|]
     File.WriteAllLines (fileName, lines)
 }
 
@@ -213,15 +214,6 @@ let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     let letter = getFstVolumeLetter cfg.usbDiskIndex
     // tasks:
     let syslinux  () = runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a -d boot %s" letter) |> cfg.output
-    let fixBoot   () = async {
-        [
-            @"\boot\libcom32.c32"
-            @"\boot\libutil.c32"
-            @"\boot\vesamenu.c32"
-        ]
-        |> List.map (fun i -> letter + i)
-        |> List.iter (copy letter)
-    }
     
     // run tasks:
     cfg.progress {formatProgress with captionTpl = "Making USB Drive Bootable"}
@@ -235,7 +227,6 @@ let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     let report = sharedState "Extracting and verifying files" true (totalFiles * 2) cfg.progress
     let! _ = [
                 extractRelease report cfg letter
-                //fixBoot()
                 saveMasterAddr cfg.masterAddr letter
                 //saveAdminKey cfg.adminKeyContent letter
                 ] |> Async.Parallel
