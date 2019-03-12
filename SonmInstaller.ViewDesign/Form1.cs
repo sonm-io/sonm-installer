@@ -19,5 +19,9 @@ namespace SonmInstaller
             Process.Start(e.Link.LinkData as string);
         }
 
+        private void progressBarBottom_Load(object sender, System.EventArgs e)
+        {
+
+        }
     }
 }

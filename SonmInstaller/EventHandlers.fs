@@ -14,6 +14,7 @@ let usbMan = new UsbManager()
 let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) = 
     this.Load.Add <| fun _ ->
         Tools.ensureAppPathExists ()
+        Tools.ensureKeyPathExists ()
 
     this.btnBack.Click.Add <| fun _ -> d BackBtn
 

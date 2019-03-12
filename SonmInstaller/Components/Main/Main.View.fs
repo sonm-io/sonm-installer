@@ -125,13 +125,17 @@ module Main =
     let private messagedView (form: WizardForm) (prev: Main.State option) (next: Main.State) d msg = 
         let defaultRender () = Common.view form prev next d
         match msg with
-        | Msg.Download p
         | Msg.MakeUsbStick p -> 
             match p with
-            | Progress.Msg.Start -> 
+            | Progress.Msg.Start _ -> 
                 Progress.reset form
                 defaultRender()
-            | Progress.Msg.Progress (current, total) -> Progress.progress form (current, total)
+            | Progress.Msg.Progress state -> 
+                //Progress.view form (Option.bind (fun s -> s.progress) prev) state
+                {next with
+                    progress = Some state
+                } |> ignore
+                defaultRender()
             | _ -> defaultRender()
         | _ -> defaultRender()
             

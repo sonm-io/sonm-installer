@@ -1,5 +1,6 @@
 ﻿namespace SonmInstaller.Components.Main
 
+open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Components
 open SonmInstaller.Tools
 
@@ -21,8 +22,12 @@ type MakingUsbStages = Formatting | Extracting
 
 type InstallationProgress =
     | WaitForStart
+    | MetadataDownloading
+    | MetadataDownloadCompelete
+    | ReleaseDownloading
+    | ReleaseDownloadComplete
     | Downloading
-    | DownloadComplete of Result<unit, exn>
+    | DownloadComplete of Result<Release, exn>
     | MakingUsb of MakingUsbStages
     | Finish
 
@@ -63,11 +68,12 @@ type State = {
     show: Show
     progress: Progress.State option
     installationProgress: InstallationProgress
+    channelMetadata: ChannelMetadata option
+    downloadedRelease: Release option
     backButton: Button.State
     nextButton: Button.State
     isPending: bool
     usbDrives: UsbDrives
-    // progress:
     isProcessElevated: bool
     hasWallet: bool
     newKeyState: NewKeyPage.State
@@ -92,6 +98,7 @@ with
 namespace SonmInstaller.Components.Main.Msg
 
 open SonmInstaller.Components
+open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Components.Main
 open SonmInstaller.Tools
 open SonmInstaller.Components.Progress
@@ -122,7 +129,8 @@ type Msg =
     | NextBtn
     | DialogResult of DlgRes
     | ChangeProgressState of Progress.State option
-    | Download of Progress.Msg<unit>
+    | DownloadMetadata of Progress.Msg<unit, ChannelMetadata>
+    | DownloadRelease of Progress.Msg<Release, Release>
     | HasWallet of bool
     | NewKeyMsg of NewKeyPage.Msg
     | GenerateKey of AsyncTask<string>
@@ -132,4 +140,4 @@ type Msg =
     | Withdraw of WithdrawMsg
     | CallSmartContract of AsyncTask<unit>
     | UsbDrives of UsbDrivesMsg
-    | MakeUsbStick of Progress.Msg<unit>
+    | MakeUsbStick of Progress.Msg<Release, unit>

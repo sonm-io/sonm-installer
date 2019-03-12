@@ -30,10 +30,10 @@ type DomainService () =
     let getAppSetting (key: string) = 
         ConfigurationManager.AppSettings.[key];
     
-    let sonmOsImageUrl = getAppSetting "SonmOsImageUrl"
+    let sonmOsMetadataUrl = getAppSetting "SonmReleaseMetadataUrl"
 
     let sonmOsImageDestination = 
-        Path.Combine (appPath, Path.GetFileName sonmOsImageUrl)
+        Path.Combine (appPath, Path.GetFileName sonmOsMetadataUrl)
 
     let libPath = Path.Combine(getExePath (), "lib")
 
@@ -58,7 +58,7 @@ type DomainService () =
         |> Seq.sortBy fst
         |> List.ofSeq
     
-    let makeUsbStick diskIndex onStageChange progress = 
+    let makeUsbStick diskIndex release progress = 
         let getAdminKeyContent () = 
             [
                 admin.Address
@@ -66,18 +66,16 @@ type DomainService () =
             ] |> String.concat "\n"
         
         let cfg = {
-            zipPath = sonmOsImageDestination
+            release = release
+            downloadsPath = appPath
             toolsPath = libPath
             usbDiskIndex = diskIndex
             masterAddr = master.Address
             adminKeyContent = getAdminKeyContent ()
-            onStageChange = onStageChange
             progress = progress
             output = fun _ -> ()
         }
-        async {
-            UsbStickMaker.makeUsbStick cfg
-        }
+        UsbStickMaker.makeUsbStick cfg
 
     let callSmartContract (withdrawTo: string) (minPayout: float) = async {
         do! {
@@ -96,9 +94,10 @@ type DomainService () =
         { 
             isProcessElevated = (fun () -> isProcessElevated)
             getUtcFilePath = fun () -> 
-                Path.Combine (appPath, (Blockchain.getUtcFileName master.Address) + ".json")
+                Path.Combine (keyPath, (Blockchain.getUtcFileName master.Address) + ".json")
             getUsbDrives = getUsbDrives
-            startDownload = Download.startDownload sonmOsImageUrl sonmOsImageDestination
+            downloadMetadata = Download.downloadMetadata sonmOsMetadataUrl
+            downloadRelease = Download.downloadRelease appPath
             generateKeyStore = generateKeyStore
             importKeyStore = importKeyStore
             openKeyFolder = openKeyFolder
