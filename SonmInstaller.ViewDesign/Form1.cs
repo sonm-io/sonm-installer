@@ -23,5 +23,10 @@ namespace SonmInstaller
         {
 
         }
+
+        private void step4disk_Click(object sender, System.EventArgs e)
+        {
+
+        }
     }
 }

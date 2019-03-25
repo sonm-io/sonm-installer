@@ -160,7 +160,7 @@ module Main =
                     match keyGenState.NextAllowed() with
                     | true  -> ns, (AsyncHlp.startAsync GenerateKey), None
                     | false -> ns, Cmd.none, None
-                | Screen.S2a2KeyGenSuccess -> goTo Screen.S3MoneyOut
+                | Screen.S2a2KeyGenSuccess -> goTo Screen.S4SelectDisk
                 | Screen.S2b1SelectJson    -> goTo Screen.S2b2JsonPassword
                 | Screen.S2b2JsonPassword  -> s, (AsyncHlp.startAsync (ImportKey.Import >> Msg.ImportKey)), None
                 | Screen.S3MoneyOut        -> s, (AsyncHlp.startAsync CallSmartContract), None
@@ -323,7 +323,7 @@ module Main =
                         (fun () -> srv.ImportKeyStore s.existingKeystore.path.Value s.existingKeystore.password)
                         (ImportKey.Import >> Msg.ImportKey)
                         (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr })
-                        >> AsyncHlp.toScreen Screen.S3MoneyOut "Key Store Import Error:"
+                        >> AsyncHlp.toScreen Screen.S4SelectDisk "Key Store Import Error:"
                         >> fun (s, _) -> s, Cmd.none)
             | Withdraw msg -> 
                 match msg with
