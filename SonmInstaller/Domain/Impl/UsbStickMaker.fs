@@ -32,11 +32,21 @@ module Wmi =
     type Volume = {
         driveLetter: string // Letter with colon, ie: "C:"
         volumeName: string
+        fileSystem: string
     } with
         static member FromManObj (mo: ManagementObject) = 
             {
                 driveLetter = getProp "DeviceID" mo // Letter with colon, ie: "C:"
                 volumeName = getProp "VolumeName" mo
+                fileSystem = getProp "FileSystem" mo
+            }
+
+    type Partition = {
+        size: int64
+    } with
+        static member FromManObj mo = 
+            {
+                size = getProp "Size" mo |> int64
             }
 
     let getVolumes (diskIndex: int) =
@@ -47,9 +57,14 @@ module Wmi =
         |> Seq.concat
         |> Seq.map Volume.FromManObj
 
+    let getPartitions diskIndex =
+        Query.partitions diskIndex
+        |> executeQuery
+        |> Seq.map Partition.FromManObj
+
 module Impl = 
 
-    let getDiskPartScript (diskIndex: int) =
+    let getFullCleanDiskPartScript (diskIndex: int) =
         [
             sprintf "select disk %d" diskIndex
             "clean"
@@ -57,6 +72,14 @@ module Impl =
             "select partition 1"
             "format label=\"SONM\" fs=fat32 quick"
             "create partition primary"
+            "exit\n"
+        ] |> String.concat "\n"
+
+    let getCleanInstallPartitionScript diskIndex =
+        [
+            sprintf "select disk %d" diskIndex
+            "select partition 1"
+            "format label=\"SONM\" fs=fat32 quick"
             "exit\n"
         ] |> String.concat "\n"
 
@@ -72,10 +95,11 @@ module Impl =
         startInfo.Arguments <- args
         p
 
-    let makePartitions (diskIndex: int) = async {
+    let makePartitions (diskIndex: int) wipe = async {
+        let script = if wipe then getFullCleanDiskPartScript diskIndex else getCleanInstallPartitionScript diskIndex
         let p = getProc "diskpart.exe" ""
         p.Start() |> ignore
-        p.StandardInput.WriteLine (getDiskPartScript diskIndex)
+        p.StandardInput.WriteLine script
         p.WaitForExit()
         let! output = p.StandardOutput.ReadToEndAsync() |> Async.AwaitTask
         return output
@@ -87,15 +111,15 @@ module Impl =
         p.WaitForExit()
         p.StandardOutput.ReadToEnd()
 
-    let getFstVolumeLetter (diskIndex: int) = 
-        let firstVolume = Wmi.getVolumes diskIndex |> Seq.head
-        firstVolume.driveLetter
+    let getFstVolume (diskIndex: int) = 
+        Wmi.getVolumes diskIndex |> List.ofSeq |> List.tryHead
         
 
 open Impl
 open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Tools
 open SonmInstaller.Atom
+open SonmInstaller.Domain
 
 type MakeUsbStickConfig = {
     release: Release
@@ -106,6 +130,7 @@ type MakeUsbStickConfig = {
     adminKeyContent: string // content that will be saved to "admin" file
     progress: State -> unit
     output: string -> unit
+    wipe: bool
 }
 
 let aggregateChecks checks =
@@ -171,18 +196,23 @@ let copy targetPath source =
         Directory.CreateDirectory(targetDir) |> ignore
     File.Copy (source, target, true)
 
-let saveMasterAddr (master: string) (usbLetter: string) = async {
+let saveMasterAddr sonmTxt (usbLetter: string) = async {
     let fileName = usbLetter |> sprintf @"%s\sonm.txt"
-    let lines = if File.Exists fileName then
-                    let lines = fileName |> File.ReadAllLines
-                    let index = lines |> Array.findIndex (fun i -> i.StartsWith "MASTER_ADDR=")
-                    lines.[index] <- lines.[index] + master
-                    lines
-                else
-                    [|"# Ethereum address of master"
-                      sprintf @"MASTER_ADDR=%s" master|]
-    File.WriteAllLines (fileName, lines)
+    File.WriteAllLines (fileName, sonmTxt)
 }
+
+let getSonmTxtContent cfg =
+    let volume = getFstVolume cfg.usbDiskIndex
+    let sonmTxtExists = match volume with 
+                        |Some v -> File.Exists (sprintf @"%s\sonm.txt" v.driveLetter)
+                        |None -> false
+    if not cfg.wipe && Option.isSome volume && sonmTxtExists then
+        let letter = volume.Value.driveLetter
+        let fileName = letter |> sprintf @"%s\sonm.txt"
+        File.ReadAllLines fileName
+    else
+        [|"# Ethereum address of master"
+          sprintf @"MASTER_ADDR=%s" cfg.masterAddr|]
 
 let saveAdminKey (adminKeyContent: string) (usbLetter: string) =
     File.WriteAllText (sprintf @"%s\admin" usbLetter, adminKeyContent)
@@ -206,12 +236,25 @@ let sharedState caption cont total progress =
         swap counter (fun f -> (fun result () -> result + current) <| f()) |> ignore
         {state with current=float ((!counter)())} |> progress)
 
+let doesDiskContainsSonm index =
+    let twoPartitions _ = (Wmi.getPartitions index |> List.ofSeq |> List.length) = 2
+    let firstPartitionLabeled _ = (Wmi.getVolumes index |> List.ofSeq |> List.head).volumeName = "SONM"
+    let firstPartitionIsLargeEnough _ = (Wmi.getPartitions index |> List.ofSeq |> List.item 1).size >= 2L * pown 2L 30
+    let firstPartitionIsFat _ = (Wmi.getVolumes index |> List.ofSeq |> List.head).fileSystem = "FAT32"
+    let thereAreSonmTxt _ = 
+        let driveLetter = (Wmi.getVolumes index |> List.ofSeq |> List.head).driveLetter
+        driveLetter |> sprintf @"%s\sonm.txt" |> File.Exists
+    twoPartitions () && firstPartitionLabeled () &&
+        firstPartitionIsLargeEnough () && firstPartitionIsFat () && thereAreSonmTxt ()
 
 let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     cfg.progress formatProgress
-    let! dpOut = makePartitions cfg.usbDiskIndex
+    let containsSonm = doesDiskContainsSonm cfg.usbDiskIndex
+    let sonmTxt = getSonmTxtContent cfg
+    let! dpOut = makePartitions cfg.usbDiskIndex (cfg.wipe || not containsSonm)
     dpOut |> cfg.output
-    let letter = getFstVolumeLetter cfg.usbDiskIndex
+
+    let letter = (getFstVolume cfg.usbDiskIndex).Value.driveLetter
     // tasks:
     let syslinux  () = runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a -d boot %s" letter) |> cfg.output
     
@@ -227,8 +270,9 @@ let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     let report = sharedState "Extracting and verifying files" true (totalFiles * 2) cfg.progress
     let! _ = [
                 extractRelease report cfg letter
-                saveMasterAddr cfg.masterAddr letter
-                //saveAdminKey cfg.adminKeyContent letter
+                saveMasterAddr sonmTxt letter
                 ] |> Async.Parallel
     return ()
 }
+
+

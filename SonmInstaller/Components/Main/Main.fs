@@ -57,9 +57,15 @@ type Show =
     | ShowMessagePage of MessagePage
     | ShowMessageBox of MsgBox
 
+type UsbDrive = {
+    index: int
+    caption: string
+    containsSonm: bool
+}
 type UsbDrives = {
-    list: (int * string) list
-    selectedDrive: (int * string) option
+    list: UsbDrive list
+    selectedDrive: UsbDrive option
+    wipePreviousData: bool
 }
 
 type State = {
@@ -122,7 +128,8 @@ type WithdrawMsg =
 
 type UsbDrivesMsg = 
     | Change
-    | SelectDrive of (int * string) option
+    | SelectDrive of int option
+    | WipePreviousData of bool
 
 type Msg =
     | BackBtn

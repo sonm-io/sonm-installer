@@ -3,6 +3,7 @@
 open SonmInstaller
 open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Components
+open SonmInstaller.Components.Main;
 
 type Service = 
     {
@@ -11,7 +12,7 @@ type Service =
         
         // Main.IService
         isProcessElevated: unit -> bool
-        getUsbDrives: unit -> (int * string) list
+        getUsbDrives: unit -> UsbDrive list
         downloadMetadata: (Progress.State -> unit) -> Async<ChannelMetadata>
         downloadRelease: Release -> (Progress.State -> unit) -> Async<Release>
         generateKeyStore: string -> string -> Async<string> // path -> password -> address
@@ -21,6 +22,7 @@ type Service =
         callSmartContract: string -> float -> Async<unit>
         makeUsbStick: 
             int ->                          // disk index 
+            bool ->
             Release ->
             (Progress.State -> unit) ->         // progress callback: etries extarcted -> total entries.
             Async<unit>
@@ -39,5 +41,5 @@ type Service =
         member x.OpenKeyFolder path = x.openKeyFolder path
         member x.OpenKeyFile path = x.openKeyFile path
         member x.CallSmartContract withdrawTo minPayout = x.callSmartContract withdrawTo minPayout
-        member x.MakeUsbStick drive release progress = x.makeUsbStick drive release progress
+        member x.MakeUsbStick drive wipe release progress = x.makeUsbStick drive wipe release progress
         member x.CloseApp () = x.closeApp ()
