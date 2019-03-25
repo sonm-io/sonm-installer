@@ -6,6 +6,7 @@ open System.IO
 open System.Configuration
 
 open SonmInstaller.Tools
+open SonmInstaller.Components.Main;
 open UsbDrivesManager
 open SonmInstaller.Utils
 
@@ -54,8 +55,8 @@ type DomainService () =
             let toGb (size: Int64) = (float size) / 1024. / 1024. / 1024.
             sprintf "%d: %s [parts: %d] [%0.3f Gb]" di.Index di.Model di.Partitions (toGb di.Size)
         usbMan.GetUsbDrives()
-        |> Seq.map (fun i -> i.Index, toStr i)
-        |> Seq.sortBy fst
+        |> Seq.map (fun i -> {index=i.Index; caption=toStr i; containsSonm=UsbStickMaker.doesDiskContainsSonm i.Index})
+        |> Seq.sortBy (fun i -> i.index)
         |> List.ofSeq
     
     let makeUsbStick diskIndex release progress = 

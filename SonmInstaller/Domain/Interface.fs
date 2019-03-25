@@ -3,6 +3,7 @@
 open SonmInstaller
 open SonmInstaller.ReleaseMetadata
 open SonmInstaller.Components
+open SonmInstaller.Components.Main;
 
 type Service = 
     {
@@ -11,7 +12,7 @@ type Service =
         
         // Main.IService
         isProcessElevated: unit -> bool
-        getUsbDrives: unit -> (int * string) list
+        getUsbDrives: unit -> UsbDrive list
         downloadMetadata: (Progress.State -> unit) -> Async<ChannelMetadata>
         downloadRelease: Release -> (Progress.State -> unit) -> Async<Release>
         generateKeyStore: string -> string -> Async<string> // path -> password -> address

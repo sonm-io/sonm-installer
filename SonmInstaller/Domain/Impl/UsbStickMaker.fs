@@ -232,3 +232,5 @@ let makeUsbStick (cfg: MakeUsbStickConfig) = async {
                 ] |> Async.Parallel
     return ()
 }
+
+let doesDiskContainsSonm index = true

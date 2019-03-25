@@ -17,9 +17,9 @@ module Main =
 
     module private Shared = 
         
-        let addDrives (form: WizardForm) (drivesList: (int * string) list) = 
+        let addDrives (form: WizardForm) (drivesList: UsbDrive list) = 
             drivesList
-            |> List.map (fun (i, text) -> new ListItem(i, text))
+            |> List.map (fun d -> new ListItem(d.index, d.caption))
             |> Array.ofList
             |> (fun dataSource -> form.cmbDisk.DataSource <- dataSource)
 
@@ -38,8 +38,9 @@ module Main =
 
     module private Common =
         open Main
+        open System.Configuration
 
-        let totalSteps = 6
+        let totalSteps = 5
 
         let updateStepNum (form: WizardForm) current total =
             let label = form.HeaderLabels.[form.tabs.SelectedIndex]
@@ -77,12 +78,6 @@ module Main =
                 form.saveNewKey.FileName         <- Path.GetFileName      keyPath
             )
 
-            //doPropIf (fun s -> s.installationProgress) (function 
-            //    | InstallationProgress.Downloading -> 
-            //        form.progressBarBottom.Visible <- true
-            //    | _ -> ()
-            //)
-
             doPropIf (fun s -> s.etherAddress) (function 
                 | Some addr -> addr
                 | None      -> String.Empty
@@ -98,8 +93,20 @@ module Main =
             doPropIf (fun s -> s.usbDrives.list) (fun usbDrives -> 
                 addDrives form usbDrives
                 match next.usbDrives.selectedDrive with
-                | Some (i, _) -> form.cmbDisk.SelectedValue <- i
+                | Some d -> form.cmbDisk.SelectedValue <- d.index
                 | None -> form.cmbDisk.SelectedIndex <- -1
+            )
+
+            doPropIf (fun s -> s.usbDrives.erasePreviousData) (fun erase ->
+                form.checkUpdateDist.Checked <- erase
+            )
+
+            doPropIf (fun s -> s.usbDrives.selectedDrive) (fun selected ->
+                let enabled, chkd = match selected with
+                                    | Some d -> d.containsSonm, next.usbDrives.erasePreviousData
+                                    | None -> false, false
+                form.checkUpdateDist.Checked <- chkd
+                form.checkUpdateDist.Enabled <- enabled
             )
 
             // ToDo: think about function like doPropIf

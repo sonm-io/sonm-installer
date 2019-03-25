@@ -22,7 +22,9 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
 
     fun (e: UsbStateChangedEventArgs) -> Change |> UsbDrives |> d
     |> fun i -> new UsbStateChangedEventHandler(i)
-    |> usbMan.add_StateChanged    
+    |> usbMan.add_StateChanged
+    
+    this.checkUpdateDist.CheckedChanged.Add <| fun _ -> ErasePreviousData this.checkUpdateDist.Checked |> UsbDrives |> d
 
     //#region step1choose Do you have etherium wallet?
     this.radioNoWallet.CheckedChanged.Add <| fun _ ->
@@ -96,7 +98,7 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     //#region step4 Select disk to write to
     this.cmbDisk.SelectedValueChanged.Add <| fun _ -> 
         this.cmbDisk.SelectedItem
-        |> (function | null -> None | i -> i :?> ListItem |> (fun i -> i.Value, i.Text) |> Some)
+        |> (function | null -> None | i -> i :?> ListItem |> (fun i -> i.Value) |> Some)
         |> UsbDrivesMsg.SelectDrive
         |> Msg.UsbDrives
         |> d

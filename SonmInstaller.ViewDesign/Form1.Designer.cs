@@ -1177,7 +1177,7 @@
         public System.Windows.Forms.Label lblMessagePageHeader;
         public System.Windows.Forms.OpenFileDialog openKeystore;
         public System.Windows.Forms.Label lblWelcomeError;
-        private System.Windows.Forms.CheckBox checkUpdateDist;
+        public System.Windows.Forms.CheckBox checkUpdateDist;
     }
 }
 

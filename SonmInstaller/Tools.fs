@@ -64,7 +64,7 @@ let saveTextFile path content =
     File.WriteAllText(path, content)
 
 let hashFile progress (path: string) =
-    let bufferSize = 65536
+    let bufferSize = 65536 * 4
     let hashFunction = new SHA256Cng()
     let rec hashBlock currentBlock count (stream: Stream) = async {
         let buffer = Array.zeroCreate<byte> bufferSize

@@ -13,7 +13,7 @@ module Main =
     type IService = 
         inherit NewKeyPage.IService
         abstract member IsProcessElevated: unit -> bool
-        abstract member GetUsbDrives: unit -> (int * string) list
+        abstract member GetUsbDrives: unit -> UsbDrive list
         abstract member DownloadMetadata : progress: (Progress.State -> unit) -> Async<ChannelMetadata>
         abstract member DownloadRelease : arg: Release -> progress: (Progress.State -> unit) -> Async<Release>
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
@@ -346,11 +346,16 @@ module Main =
                             if currentSelected.IsNone || not <| List.contains currentSelected.Value list then None 
                             else currentSelected
                         { s.usbDrives with list = list; selectedDrive = selected }
-                    | SelectDrive drive -> { s.usbDrives with selectedDrive = drive }
+                    | SelectDrive(Some(index)) ->
+                        let list = s.usbDrives.list
+                        let selected = List.tryFind (fun d -> d.index = index) list
+                        { s.usbDrives with selectedDrive = selected }
+                    | SelectDrive None -> { s.usbDrives with selectedDrive = None }
+                    | ErasePreviousData flag -> { s.usbDrives with erasePreviousData = flag }
                 { s with usbDrives = usbDrives }, Cmd.none 
             | MakeUsbStick task -> 
                 let factory release dispatch = 
-                    let driveIndex = s.usbDrives.selectedDrive.Value |> fst
+                    let driveIndex = s.usbDrives.selectedDrive.Value.index
                     let progress state = 
                         state |> Some |> ChangeProgressState |> dispatch
                     srv.MakeUsbStick driveIndex release progress
@@ -395,6 +400,7 @@ module Main =
             usbDrives = {
                 list = srv.GetUsbDrives()
                 selectedDrive = None
+                erasePreviousData = false
             }
         }, Cmd.none)
         |> withButtons
