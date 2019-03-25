@@ -13,7 +13,7 @@ module Main =
     type IService = 
         inherit NewKeyPage.IService
         abstract member IsProcessElevated: unit -> bool
-        abstract member GetUsbDrives: unit -> (int * string) list
+        abstract member GetUsbDrives: unit -> UsbDrive list
         abstract member DownloadMetadata : progress: (Progress.State -> unit) -> Async<ChannelMetadata>
         abstract member DownloadRelease : arg: Release -> progress: (Progress.State -> unit) -> Async<Release>
         abstract member GenerateKeyStore : path: string -> password: string -> Async<string>
@@ -21,7 +21,7 @@ module Main =
         abstract member OpenKeyFolder : path: string -> unit
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
-        abstract member MakeUsbStick: drive: int -> release: Release -> progress: (Progress.State -> unit) -> Async<unit>
+        abstract member MakeUsbStick: drive: int -> wipe: bool -> release: Release -> progress: (Progress.State -> unit) -> Async<unit>
         abstract member CloseApp: unit -> unit
 
     module private Impl = 
@@ -160,7 +160,7 @@ module Main =
                     match keyGenState.NextAllowed() with
                     | true  -> ns, (AsyncHlp.startAsync GenerateKey), None
                     | false -> ns, Cmd.none, None
-                | Screen.S2a2KeyGenSuccess -> goTo Screen.S3MoneyOut
+                | Screen.S2a2KeyGenSuccess -> goTo Screen.S4SelectDisk
                 | Screen.S2b1SelectJson    -> goTo Screen.S2b2JsonPassword
                 | Screen.S2b2JsonPassword  -> s, (AsyncHlp.startAsync (ImportKey.Import >> Msg.ImportKey)), None
                 | Screen.S3MoneyOut        -> s, (AsyncHlp.startAsync CallSmartContract), None
@@ -323,7 +323,7 @@ module Main =
                         (fun () -> srv.ImportKeyStore s.existingKeystore.path.Value s.existingKeystore.password)
                         (ImportKey.Import >> Msg.ImportKey)
                         (AsyncHlp.mapStateOk (fun s addr -> { s with etherAddress = Some addr })
-                        >> AsyncHlp.toScreen Screen.S3MoneyOut "Key Store Import Error:"
+                        >> AsyncHlp.toScreen Screen.S4SelectDisk "Key Store Import Error:"
                         >> fun (s, _) -> s, Cmd.none)
             | Withdraw msg -> 
                 match msg with
@@ -345,15 +345,23 @@ module Main =
                         let selected = 
                             if currentSelected.IsNone || not <| List.contains currentSelected.Value list then None 
                             else currentSelected
-                        { s.usbDrives with list = list; selectedDrive = selected }
-                    | SelectDrive drive -> { s.usbDrives with selectedDrive = drive }
+                        let wipe = match selected with | Some d -> d.containsSonm && s.usbDrives.wipePreviousData | None -> false
+                        { s.usbDrives with list = list; selectedDrive = selected; wipePreviousData = wipe}
+                    | SelectDrive(Some(index)) ->
+                        let list = s.usbDrives.list
+                        let selected = List.tryFind (fun d -> d.index = index) list
+                        let wipe = match selected with | Some d -> d.containsSonm && s.usbDrives.wipePreviousData | None -> false
+                        { s.usbDrives with selectedDrive = selected; wipePreviousData = wipe }
+                    | SelectDrive None -> { s.usbDrives with selectedDrive = None }
+                    | WipePreviousData flag -> { s.usbDrives with wipePreviousData = flag }
                 { s with usbDrives = usbDrives }, Cmd.none 
             | MakeUsbStick task -> 
                 let factory release dispatch = 
-                    let driveIndex = s.usbDrives.selectedDrive.Value |> fst
+                    let driveIndex = s.usbDrives.selectedDrive.Value.index
                     let progress state = 
                         state |> Some |> ChangeProgressState |> dispatch
-                    srv.MakeUsbStick driveIndex release progress
+                    let wipe = s.usbDrives.wipePreviousData
+                    srv.MakeUsbStick driveIndex wipe release progress
 
                 task
                 |> AsyncHlp.processProgressTask s factory 
@@ -395,6 +403,7 @@ module Main =
             usbDrives = {
                 list = srv.GetUsbDrives()
                 selectedDrive = None
+                wipePreviousData = false
             }
         }, Cmd.none)
         |> withButtons

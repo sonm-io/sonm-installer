@@ -49,7 +49,7 @@ let download
         
     Console.WriteLine("StartDownload")
 
-let makeUsbStick formattingTime extractTime totalEntries _ _
+let makeUsbStick formattingTime extractTime totalEntries _ _ _
     (progress: Progress.State -> unit) = async { //ToDo: simplify
     do! Async.Sleep formattingTime
     let delta = (float extractTime) / (float totalEntries) |> int
@@ -92,7 +92,7 @@ let createEmptyService asyncTasksWait =
     {
         isProcessElevated = (fun () -> true)
         getUtcFilePath    = (fun _ -> Path.Combine (Tools.keyPath, "key.json"))
-        getUsbDrives      = (fun _ -> [(91, "X:"); (91, "Y:")])
+        getUsbDrives      = (fun _ -> [{index=91; caption="X:"; containsSonm=false}; {index=91; caption="Y:"; containsSonm=false}])
         downloadMetadata  = (fun _ -> wait ms "downloadMetadata" mockMetadata)
         downloadRelease   = (fun _ _ -> wait ms "downloadRelease" mockMetadata.SonmOS.Latest)
         generateKeyStore  = (fun _ _ -> wait ms "generateKeyStore" address)
