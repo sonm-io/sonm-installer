@@ -59,7 +59,7 @@ type DomainService () =
         |> Seq.sortBy (fun i -> i.index)
         |> List.ofSeq
     
-    let makeUsbStick diskIndex release progress = 
+    let makeUsbStick diskIndex erase release progress = 
         let getAdminKeyContent () = 
             [
                 admin.Address

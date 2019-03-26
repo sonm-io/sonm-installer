@@ -21,7 +21,7 @@ module Main =
         abstract member OpenKeyFolder : path: string -> unit
         abstract member OpenKeyFile   : path: string -> unit
         abstract member CallSmartContract: withdrawTo: string -> minPayout: float -> Async<unit>
-        abstract member MakeUsbStick: drive: int -> release: Release -> progress: (Progress.State -> unit) -> Async<unit>
+        abstract member MakeUsbStick: drive: int -> erase: bool -> release: Release -> progress: (Progress.State -> unit) -> Async<unit>
         abstract member CloseApp: unit -> unit
 
     module private Impl = 
@@ -345,11 +345,13 @@ module Main =
                         let selected = 
                             if currentSelected.IsNone || not <| List.contains currentSelected.Value list then None 
                             else currentSelected
-                        { s.usbDrives with list = list; selectedDrive = selected }
+                        let erase = match selected with | Some d -> d.containsSonm && s.usbDrives.erasePreviousData | None -> false
+                        { s.usbDrives with list = list; selectedDrive = selected; erasePreviousData = erase}
                     | SelectDrive(Some(index)) ->
                         let list = s.usbDrives.list
                         let selected = List.tryFind (fun d -> d.index = index) list
-                        { s.usbDrives with selectedDrive = selected }
+                        let erase = match selected with | Some d -> d.containsSonm && s.usbDrives.erasePreviousData | None -> false
+                        { s.usbDrives with selectedDrive = selected; erasePreviousData = erase }
                     | SelectDrive None -> { s.usbDrives with selectedDrive = None }
                     | ErasePreviousData flag -> { s.usbDrives with erasePreviousData = flag }
                 { s with usbDrives = usbDrives }, Cmd.none 
@@ -358,7 +360,8 @@ module Main =
                     let driveIndex = s.usbDrives.selectedDrive.Value.index
                     let progress state = 
                         state |> Some |> ChangeProgressState |> dispatch
-                    srv.MakeUsbStick driveIndex release progress
+                    let erase = s.usbDrives.erasePreviousData
+                    srv.MakeUsbStick driveIndex erase release progress
 
                 task
                 |> AsyncHlp.processProgressTask s factory 

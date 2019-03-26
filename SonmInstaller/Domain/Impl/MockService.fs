@@ -49,7 +49,7 @@ let download
         
     Console.WriteLine("StartDownload")
 
-let makeUsbStick formattingTime extractTime totalEntries _ _
+let makeUsbStick formattingTime extractTime totalEntries _ _ _
     (progress: Progress.State -> unit) = async { //ToDo: simplify
     do! Async.Sleep formattingTime
     let delta = (float extractTime) / (float totalEntries) |> int

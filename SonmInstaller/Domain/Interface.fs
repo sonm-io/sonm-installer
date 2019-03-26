@@ -22,6 +22,7 @@ type Service =
         callSmartContract: string -> float -> Async<unit>
         makeUsbStick: 
             int ->                          // disk index 
+            bool ->
             Release ->
             (Progress.State -> unit) ->         // progress callback: etries extarcted -> total entries.
             Async<unit>
@@ -40,5 +41,5 @@ type Service =
         member x.OpenKeyFolder path = x.openKeyFolder path
         member x.OpenKeyFile path = x.openKeyFile path
         member x.CallSmartContract withdrawTo minPayout = x.callSmartContract withdrawTo minPayout
-        member x.MakeUsbStick drive release progress = x.makeUsbStick drive release progress
+        member x.MakeUsbStick drive erase release progress = x.makeUsbStick drive erase release progress
         member x.CloseApp () = x.closeApp ()

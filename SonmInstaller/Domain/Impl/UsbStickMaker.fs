@@ -32,11 +32,21 @@ module Wmi =
     type Volume = {
         driveLetter: string // Letter with colon, ie: "C:"
         volumeName: string
+        fileSystem: string
     } with
         static member FromManObj (mo: ManagementObject) = 
             {
                 driveLetter = getProp "DeviceID" mo // Letter with colon, ie: "C:"
                 volumeName = getProp "VolumeName" mo
+                fileSystem = getProp "FileSystem" mo
+            }
+
+    type Partition = {
+        size: int64
+    } with
+        static member FromManObj mo = 
+            {
+                size = getProp "Size" mo |> int64
             }
 
     let getVolumes (diskIndex: int) =
@@ -47,9 +57,14 @@ module Wmi =
         |> Seq.concat
         |> Seq.map Volume.FromManObj
 
+    let getPartitions diskIndex =
+        Query.partitions diskIndex
+        |> executeQuery
+        |> Seq.map Partition.FromManObj
+
 module Impl = 
 
-    let getDiskPartScript (diskIndex: int) =
+    let getFullCleanDiskPartScript (diskIndex: int) =
         [
             sprintf "select disk %d" diskIndex
             "clean"
@@ -59,6 +74,9 @@ module Impl =
             "create partition primary"
             "exit\n"
         ] |> String.concat "\n"
+
+    let getCleanInstallPartitionScript diskIndex =
+        ""
 
     let getProc fileName args = 
         let p = new Process()
@@ -72,10 +90,11 @@ module Impl =
         startInfo.Arguments <- args
         p
 
-    let makePartitions (diskIndex: int) = async {
+    let makePartitions (diskIndex: int) erase = async {
+        let script = if erase then getFullCleanDiskPartScript diskIndex else getCleanInstallPartitionScript diskIndex
         let p = getProc "diskpart.exe" ""
         p.Start() |> ignore
-        p.StandardInput.WriteLine (getDiskPartScript diskIndex)
+        p.StandardInput.WriteLine script
         p.WaitForExit()
         let! output = p.StandardOutput.ReadToEndAsync() |> Async.AwaitTask
         return output
@@ -106,6 +125,7 @@ type MakeUsbStickConfig = {
     adminKeyContent: string // content that will be saved to "admin" file
     progress: State -> unit
     output: string -> unit
+    erase: bool
 }
 
 let aggregateChecks checks =
@@ -209,8 +229,9 @@ let sharedState caption cont total progress =
 
 let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     cfg.progress formatProgress
-    let! dpOut = makePartitions cfg.usbDiskIndex
+    let! dpOut = makePartitions cfg.usbDiskIndex cfg.erase
     dpOut |> cfg.output
+
     let letter = getFstVolumeLetter cfg.usbDiskIndex
     // tasks:
     let syslinux  () = runCmd (Path.Combine (cfg.toolsPath, "syslinux64.exe")) (sprintf "-m -a -d boot %s" letter) |> cfg.output
@@ -228,9 +249,18 @@ let makeUsbStick (cfg: MakeUsbStickConfig) = async {
     let! _ = [
                 extractRelease report cfg letter
                 saveMasterAddr cfg.masterAddr letter
-                //saveAdminKey cfg.adminKeyContent letter
                 ] |> Async.Parallel
     return ()
 }
 
-let doesDiskContainsSonm index = true
+let twoPartitions index = (Wmi.getPartitions index |> List.ofSeq |> List.length) = 2
+let firstPartitionLabeled index = (Wmi.getVolumes index |> List.ofSeq |> List.head).volumeName = "SONM"
+let firstPartitionIsLargeEnough index = (Wmi.getPartitions index |> List.ofSeq |> List.item 1).size >= 2L * pown 2L 30
+let firstPartitionIsFat index = (Wmi.getVolumes index |> List.ofSeq |> List.head).fileSystem = "FAT32"
+let thereAreSonmTxt index = 
+    let driveLetter = (Wmi.getVolumes index |> List.ofSeq |> List.head).driveLetter
+    driveLetter |> sprintf @"%s\sonm.txt" |> File.Exists
+
+let doesDiskContainsSonm index =
+    twoPartitions index && firstPartitionLabeled index &&
+        firstPartitionIsLargeEnough index && firstPartitionIsFat index && thereAreSonmTxt index

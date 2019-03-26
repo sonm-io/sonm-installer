@@ -90,6 +90,7 @@
             this.tbAddressToSend = new System.Windows.Forms.TextBox();
             this.lblHeader3 = new System.Windows.Forms.Label();
             this.step4disk = new System.Windows.Forms.TabPage();
+            this.checkUpdateDist = new System.Windows.Forms.CheckBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.cmbDisk = new System.Windows.Forms.ComboBox();
@@ -108,7 +109,6 @@
             this.btnMessagePageTryAgain = new System.Windows.Forms.Button();
             this.lblMessagePageText = new System.Windows.Forms.Label();
             this.lblMessagePageHeader = new System.Windows.Forms.Label();
-            this.checkUpdateDist = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.step0.SuspendLayout();
@@ -835,6 +835,16 @@
             this.step4disk.Text = "step4disk";
             this.step4disk.Click += new System.EventHandler(this.step4disk_Click);
             // 
+            // checkUpdateDist
+            // 
+            this.checkUpdateDist.AutoSize = true;
+            this.checkUpdateDist.Location = new System.Drawing.Point(9, 213);
+            this.checkUpdateDist.Name = "checkUpdateDist";
+            this.checkUpdateDist.Size = new System.Drawing.Size(230, 17);
+            this.checkUpdateDist.TabIndex = 6;
+            this.checkUpdateDist.Text = "Erase SONM data from previous installation";
+            this.checkUpdateDist.UseVisualStyleBackColor = true;
+            // 
             // label9
             // 
             this.label9.AutoSize = true;
@@ -1042,16 +1052,6 @@
             this.lblMessagePageHeader.TabIndex = 3;
             this.lblMessagePageHeader.Tag = "header";
             this.lblMessagePageHeader.Text = "Error";
-            // 
-            // checkUpdateDist
-            // 
-            this.checkUpdateDist.AutoSize = true;
-            this.checkUpdateDist.Location = new System.Drawing.Point(9, 213);
-            this.checkUpdateDist.Name = "checkUpdateDist";
-            this.checkUpdateDist.Size = new System.Drawing.Size(152, 17);
-            this.checkUpdateDist.TabIndex = 6;
-            this.checkUpdateDist.Text = "Update existing distribution";
-            this.checkUpdateDist.UseVisualStyleBackColor = true;
             // 
             // WizardFormDesign
             // 

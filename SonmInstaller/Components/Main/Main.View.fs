@@ -123,8 +123,7 @@ module Main =
             form.progressBarBottom.Visible <- 
                 let cs = next.CurrentScreen ()
                 cs > Screen.S0Welcome 
-                && cs < Screen.S5Progress 
-                //&& [ InstallationProgress.Downloading ] |> List.contains next.InstallationProgress
+                && cs < Screen.S5Progress
 
             if next.CurrentScreen () = Screen.S0Welcome then
                 updateWelcomeScreen form next.isProcessElevated
