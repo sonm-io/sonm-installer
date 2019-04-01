@@ -59,7 +59,7 @@ type DomainService () =
         |> Seq.sortBy (fun i -> i.index)
         |> List.ofSeq
     
-    let makeUsbStick diskIndex erase release progress = 
+    let makeUsbStick diskIndex wipe release progress = 
         let getAdminKeyContent () = 
             [
                 admin.Address
@@ -75,6 +75,7 @@ type DomainService () =
             adminKeyContent = getAdminKeyContent ()
             progress = progress
             output = fun _ -> ()
+            wipe = wipe
         }
         UsbStickMaker.makeUsbStick cfg
 

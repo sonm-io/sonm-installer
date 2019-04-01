@@ -41,5 +41,5 @@ type Service =
         member x.OpenKeyFolder path = x.openKeyFolder path
         member x.OpenKeyFile path = x.openKeyFile path
         member x.CallSmartContract withdrawTo minPayout = x.callSmartContract withdrawTo minPayout
-        member x.MakeUsbStick drive erase release progress = x.makeUsbStick drive erase release progress
+        member x.MakeUsbStick drive wipe release progress = x.makeUsbStick drive wipe release progress
         member x.CloseApp () = x.closeApp ()

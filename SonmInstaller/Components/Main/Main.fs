@@ -65,7 +65,7 @@ type UsbDrive = {
 type UsbDrives = {
     list: UsbDrive list
     selectedDrive: UsbDrive option
-    erasePreviousData: bool
+    wipePreviousData: bool
 }
 
 type State = {
@@ -129,7 +129,7 @@ type WithdrawMsg =
 type UsbDrivesMsg = 
     | Change
     | SelectDrive of int option
-    | ErasePreviousData of bool
+    | WipePreviousData of bool
 
 type Msg =
     | BackBtn

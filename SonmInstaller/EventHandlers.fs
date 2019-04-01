@@ -24,7 +24,7 @@ let subscribeToEvents (this: WizardForm) (d: Dispatch<Msg>) =
     |> fun i -> new UsbStateChangedEventHandler(i)
     |> usbMan.add_StateChanged
     
-    this.checkUpdateDist.CheckedChanged.Add <| fun _ -> ErasePreviousData this.checkUpdateDist.Checked |> UsbDrives |> d
+    this.checkUpdateDist.CheckedChanged.Add <| fun _ -> WipePreviousData this.checkUpdateDist.Checked |> UsbDrives |> d
 
     //#region step1choose Do you have etherium wallet?
     this.radioNoWallet.CheckedChanged.Add <| fun _ ->

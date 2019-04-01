@@ -97,13 +97,13 @@ module Main =
                 | None -> form.cmbDisk.SelectedIndex <- -1
             )
 
-            doPropIf (fun s -> s.usbDrives.erasePreviousData) (fun erase ->
-                form.checkUpdateDist.Checked <- erase
+            doPropIf (fun s -> s.usbDrives.wipePreviousData) (fun wipe ->
+                form.checkUpdateDist.Checked <- wipe
             )
 
             doPropIf (fun s -> s.usbDrives.selectedDrive) (fun selected ->
                 let enabled, chkd = match selected with
-                                    | Some d -> d.containsSonm, next.usbDrives.erasePreviousData
+                                    | Some d -> d.containsSonm, next.usbDrives.wipePreviousData
                                     | None -> false, false
                 form.checkUpdateDist.Checked <- chkd
                 form.checkUpdateDist.Enabled <- enabled
